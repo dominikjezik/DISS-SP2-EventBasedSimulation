@@ -1,16 +1,25 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Linq;
+using DiscreteSimulation.Core.FurnitureManufacturer.Entities;
+using DiscreteSimulation.Core.TicketStore;
 using DiscreteSimulation.Core.Warehouse;
 
 namespace DiscreteSimulation.GUI.ViewModels;
 
 public class MainWindowViewModel : ViewModelBase
 {
+    private readonly TicketStoreSimulation _ticketStoreSimulation = new();
+    
     private readonly WarehouseSimulation _simulation = new();
     
     public WarehouseSimulation Simulation => _simulation;
     
-    private readonly CustomStrategyLoader _customStrategyLoader = new();
+    public TicketStoreSimulation TicketStoreSimulation => _ticketStoreSimulation;
+    
+    
+    #region SimulationControlButtons
     
     private bool _isStartSimulationButtonEnabled = true;
 
@@ -22,72 +31,131 @@ public class MainWindowViewModel : ViewModelBase
             _isStartSimulationButtonEnabled = value;
             OnPropertyChanged();
             OnPropertyChanged(nameof(IsStopSimulationButtonEnabled));
+            OnPropertyChanged(nameof(IsSpeedSelectorEnabled));
+            OnPropertyChanged(nameof(IsDefaultSpeedButtonEnabled));
+            OnPropertyChanged(nameof(IsDecreaseSpeedButtonEnabled));
+            OnPropertyChanged(nameof(IsIncreaseSpeedButtonEnabled));
+            OnPropertyChanged(nameof(IsSpeedMaxButtonEnabled));
         }
     }
     
     public bool IsStopSimulationButtonEnabled => !IsStartSimulationButtonEnabled;
+
+    private bool _isPauseResumeSimulationButtonEnabled = false;
     
-    public Dictionary<string, string> StrategiesOptions { get; set; } = new()
+    public bool IsPauseResumeSimulationButtonEnabled
     {
-        { "A", "Strategy A" },
-        { "B", "Strategy B" },
-        { "C", "Strategy C" },
-        { "D", "Strategy D" },
-        { "Custom1", "Custom Strategy 1" },
-        { "Custom2", "Custom Strategy 2" },
-        { "Custom3", "Custom Strategy 3" },
-        { "CustomFromFile", "Custom Strategy from File" }
+        get => _isPauseResumeSimulationButtonEnabled;
+        set
+        {
+            _isPauseResumeSimulationButtonEnabled = value;
+            OnPropertyChanged();
+        }
+    }
+    
+    private string _pauseResumeSimulationButtonText = "Pause";
+    
+    public string PauseResumeSimulationButtonText
+    {
+        get => _pauseResumeSimulationButtonText;
+        set
+        {
+            _pauseResumeSimulationButtonText = value;
+            OnPropertyChanged();
+        }
+    }
+
+    public void PauseResumeSimulation()
+    {
+        
+    }
+    
+    public bool IsDefaultSpeedButtonEnabled => SelectedSpeedIndex != 0 && (_isStartSimulationButtonEnabled || _selectedSpeedIndex != SpeedOptions.Count - 1);
+    
+    public bool IsDecreaseSpeedButtonEnabled => SelectedSpeedIndex > 0 && (_isStartSimulationButtonEnabled || _selectedSpeedIndex != SpeedOptions.Count - 1);
+    
+    public bool IsIncreaseSpeedButtonEnabled => SelectedSpeedIndex < SpeedOptions.Count - 1 && (_isStartSimulationButtonEnabled || _selectedSpeedIndex != SpeedOptions.Count - 1);
+    
+    public bool IsSpeedMaxButtonEnabled => SelectedSpeedIndex < SpeedOptions.Count - 1 && (_isStartSimulationButtonEnabled || _selectedSpeedIndex != SpeedOptions.Count - 1);
+    
+    public OrderedDictionary<double, string> SpeedOptions { get; set; } = new()
+    {
+        { 1.0, "x1" },
+        { 2.0, "x2" },
+        { 5.0, "x5" },
+        { 10.0, "x10" },
+        { 50.0, "x50" },
+        { 100.0, "x100" },
+        { 500.0, "x500" },
+        { 1000.0, "x1000" },
+        { 10000.0, "x10000" },
+        { 100000.0, "x100000" },
+        { double.PositiveInfinity, "MAX" }
     };
-    
-    private string _selectedStrategy = "A";
 
-    public string SelectedStrategy
+    private int _selectedSpeedIndex = 0;
+
+    public int SelectedSpeedIndex
     {
-        get => _selectedStrategy;
+        get => _selectedSpeedIndex;
         set
         {
-            _selectedStrategy = value;
+            _selectedSpeedIndex = value;
             OnPropertyChanged();
-
-            if (value == "CustomFromFile")
-            {
-                SelectedCustomFromFileStrategy?.Invoke();
-            }
+            OnPropertyChanged(nameof(IsDefaultSpeedButtonEnabled));
+            OnPropertyChanged(nameof(IsDecreaseSpeedButtonEnabled));
+            OnPropertyChanged(nameof(IsIncreaseSpeedButtonEnabled));
+            OnPropertyChanged(nameof(IsSpeedMaxButtonEnabled));
+            OnPropertyChanged(nameof(IsSpeedSelectorEnabled));
+            
+            TicketStoreSimulation.SimulationSpeed = SpeedOptions.ElementAt(SelectedSpeedIndex).Key;
         }
     }
 
-    private bool _isEnabledStrategySelector = true;
-
-    public bool IsEnabledStrategySelector
+    public bool IsSpeedSelectorEnabled => _isStartSimulationButtonEnabled || _selectedSpeedIndex != SpeedOptions.Count - 1;
+    
+    public void DecreaseSpeed()
     {
-        get => _isEnabledStrategySelector;
-        set
+        if (SelectedSpeedIndex == 0)
         {
-            _isEnabledStrategySelector = value;
-            OnPropertyChanged();
+            return;
         }
+        
+        SelectedSpeedIndex--;
+    }
+
+    public void IncreaseSpeed()
+    {
+        SelectedSpeedIndex++;
+    }
+
+    public void SetMaxSpeed()
+    {
+        SelectedSpeedIndex = SpeedOptions.Count - 1;
     }
     
-    public event Action? SelectedCustomFromFileStrategy;
-
-    public void LoadCustomStrategyFromFile(Uri pathToFile)
+    public void SetDefaultSpeed()
     {
-        Simulation.CustomStrategyTableFromFile = _customStrategyLoader.LoadStrategyFromFile(pathToFile);
+        SelectedSpeedIndex = 0;
     }
 
     public void DisableButtonsForSimulationStart()
     {
         IsStartSimulationButtonEnabled = false;
-        IsEnabledStrategySelector = false;
+        IsPauseResumeSimulationButtonEnabled = true;
     }
 
     public void EnableButtonsForSimulationEnd()
     {
         IsStartSimulationButtonEnabled = true;
-        IsEnabledStrategySelector = true;
+        IsPauseResumeSimulationButtonEnabled = false;
     }
+    
+    #endregion
 
-    private long _replications = 2_000_000;
+    #region ReplicationControls
+
+    private long _replications = 1;
     
     public long Replications
     {
@@ -103,9 +171,185 @@ public class MainWindowViewModel : ViewModelBase
             {
                 RenderPoints = value;
             }
+            
+            if (Replications == 1)
+            {
+                IsSingleReplication = true;
+            }
+            else
+            {
+                IsSingleReplication = false;
+            }
+        }
+    }
+    
+    private bool _isSingleReplication = true;
+    
+    public bool IsSingleReplication
+    {
+        get => _isSingleReplication;
+        set
+        {
+            _isSingleReplication = value;
+            OnPropertyChanged();
+            OnPropertyChanged(nameof(IsMultipleReplications));
+        }
+    }
+    
+    public bool IsMultipleReplications => !IsSingleReplication;
+    
+    private int _maxReplicationTime = 100_000_000;
+    
+    public int MaxReplicationTime
+    {
+        get => _maxReplicationTime;
+        set
+        {
+            _maxReplicationTime = value;
+            OnPropertyChanged();
+        }
+    }
+    
+    #endregion
+    
+    #region SingleReplicationControls
+    
+    private string _avgOrderProcessingTime = "-";
+
+    public string AvgOrderProcessingTime
+    {
+        get => _avgOrderProcessingTime;
+        set
+        {
+            _avgOrderProcessingTime = value;
+            OnPropertyChanged();
+        }
+    }
+    
+    private string _avgPendingOrders = "-";
+    
+    public string AvgPendingOrders
+    {
+        get => _avgPendingOrders;
+        set
+        {
+            _avgPendingOrders = value;
+            OnPropertyChanged();
         }
     }
 
+    private string _currentSimulationTime = "0";
+    
+    public string CurrentSimulationTime
+    {
+        get => _currentSimulationTime;
+        set
+        {
+            _currentSimulationTime = value;
+            OnPropertyChanged();
+        }
+    }
+    
+    private ObservableCollection<Order> _orders =
+    [
+        new Order()
+        {
+            Id = 1,
+            Type = default,
+            State = "Waiting",
+            Place = "Supplier",
+            ArrivalTime = 0
+        }
+    ];
+
+    public ObservableCollection<Order> Orders
+    {
+        get => _orders;
+        set {
+            _orders = value;
+            OnPropertyChanged();
+        }
+    }
+
+    private ObservableCollection<AssemblyLine> _assemblyLines =
+    [
+        new AssemblyLine()
+        {
+            Id = 1,
+            Activity = "Idle"
+        }
+    ];
+    
+    public ObservableCollection<AssemblyLine> AssemblyLines
+    {
+        get => _assemblyLines;
+        set {
+            _assemblyLines = value;
+            OnPropertyChanged();
+        }
+    }
+    
+    private ObservableCollection<Worker> _workersA =
+    [
+        new Worker()
+        {
+            Id = 1
+        }
+    ];
+    
+    public ObservableCollection<Worker> WorkersA
+    {
+        get => _workersA;
+        set {
+            _workersA = value;
+            OnPropertyChanged();
+        }
+    }
+    
+    private ObservableCollection<Worker> _workersB =
+    [
+        new Worker()
+        {
+            Id = 1
+        }
+    ];
+    
+    public ObservableCollection<Worker> WorkersB
+    {
+        get => _workersB;
+        set {
+            _workersB = value;
+            OnPropertyChanged();
+        }
+    }
+    
+    private ObservableCollection<Worker> _workersC =
+    [
+        new Worker()
+        {
+            Id = 1
+        }
+    ];
+    
+    public ObservableCollection<Worker> WorkersC
+    {
+        get => _workersC;
+        set {
+            _workersC = value;
+            OnPropertyChanged();
+        }
+    }
+
+    #endregion
+    
+
+    
+    
+    
+    
+    
+    
+    
     private long _skipFirstNReplicationsInPercent = 0;
     
     public long SkipFirstNReplicationsInPercent
@@ -144,14 +388,14 @@ public class MainWindowViewModel : ViewModelBase
         }
     }
     
-    private string _currentCosts = "? ";
+    private string _currentAverageWaitingTime = "? ";
 
     public string CurrentCosts
     {
-        get => $"{_currentCosts}€";
+        get => $"{_currentAverageWaitingTime}€";
         set
         {
-            _currentCosts = value;
+            _currentAverageWaitingTime = value;
             OnPropertyChanged();
         }
     }
@@ -167,19 +411,4 @@ public class MainWindowViewModel : ViewModelBase
             OnPropertyChanged();
         }
     }
-
-    private bool _isSingleReplication = false;
-    
-    public bool IsSingleReplication
-    {
-        get => _isSingleReplication;
-        set
-        {
-            _isSingleReplication = value;
-            OnPropertyChanged();
-            OnPropertyChanged(nameof(IsMultipleReplications));
-        }
-    }
-    
-    public bool IsMultipleReplications => !IsSingleReplication;
 }
