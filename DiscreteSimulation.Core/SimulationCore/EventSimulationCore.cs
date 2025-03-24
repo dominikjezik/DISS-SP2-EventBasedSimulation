@@ -1,3 +1,5 @@
+using DiscreteSimulation.Core.Events;
+
 namespace DiscreteSimulation.Core.SimulationCore;
 
 public abstract class EventSimulationCore : MonteCarloSimulationCore
@@ -42,6 +44,8 @@ public abstract class EventSimulationCore : MonteCarloSimulationCore
         {
             while (IsSimulationPaused)
             {
+                // TODO: Asi aj check na stop simulacie a nasledne stopnutie?
+                
                 Thread.Sleep(200);
             }
 

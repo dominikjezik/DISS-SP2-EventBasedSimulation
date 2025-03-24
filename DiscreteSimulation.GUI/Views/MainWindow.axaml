@@ -22,7 +22,7 @@
         <StackPanel Grid.Row="0" Grid.Column="0" Orientation="Horizontal" Margin="0,0,0,10">
             <Button 
                 Margin="10,10,0,0" 
-                Width="60"
+                Width="70"
                 HorizontalContentAlignment="Center"
                 Click="StartSimulationButton_OnClick"
                 IsEnabled="{Binding IsStartSimulationButtonEnabled}">
@@ -31,7 +31,7 @@
             
             <Button 
                 Margin="10,10,0,0"
-                Width="60"
+                Width="70"
                 HorizontalContentAlignment="Center"
                 Click="StopSimulationButton_OnClick"
                 IsEnabled="{Binding IsStopSimulationButtonEnabled}">
@@ -40,7 +40,7 @@
             
             <Button 
                 Margin="10,10,0,0"
-                Width="60"
+                Width="70"
                 HorizontalContentAlignment="Center"
                 Click="PauseResumeSimulationButton_OnClick"
                 IsEnabled="{Binding IsPauseResumeSimulationButtonEnabled}" 
@@ -92,19 +92,14 @@
             Grid.Row="0" Grid.Column="1" 
             IsVisible="{Binding IsSingleReplication}"
             Orientation="Horizontal" 
-            Margin="30,0,0,10" 
-            HorizontalAlignment="Left">
-            <Label 
-                VerticalAlignment="Center"
-                FontSize="16"
-                FontFamily="Source Code Pro"
-                Margin="0,10,5,0" >Simulation Time: </Label>
-            
+            Margin="0,0,0,10" 
+            HorizontalAlignment="Center">
             <Label 
                 VerticalAlignment="Center"
                 FontSize="16"
                 Margin="0,10,5,0"
                 FontFamily="Source Code Pro"
+                FontWeight="Bold"
                 Content="{Binding CurrentSimulationTime}" />
         </StackPanel>
         
@@ -163,7 +158,6 @@
                     <DataGridTextColumn Header="#" Width="Auto" Binding="{Binding Id}" />
                     <DataGridTextColumn Header="Type" Width="Auto" Binding="{Binding Type}" />
                     <DataGridTextColumn Header="State" Width="*" Binding="{Binding State}" />
-                    <DataGridTextColumn Header="Place" Width="Auto" Binding="{Binding Place}" />
                     <DataGridTextColumn Header="Arrival" Width="Auto" Binding="{Binding ArrivalTime}" />
                 </DataGrid.Columns>
             </DataGrid>
@@ -194,9 +188,9 @@
                 
                 <DataGrid.Columns>
                     <DataGridTextColumn Header="Line no." Width="Auto" Binding="{Binding Id}" />
-                    <DataGridTextColumn Header="Order" Width="Auto" Binding="{Binding CurrentOrder.Id}" />
-                    <DataGridTextColumn Header="Activity" Width="*" Binding="{Binding Activity}" />
-                    <DataGridTextColumn Header="Worker" Width="Auto" Binding="{Binding CurrentWorker.Id}" />
+                    <DataGridTextColumn Header="Order" Width="Auto" Binding="{Binding CurrentOrder}" />
+                    <DataGridTextColumn Header="State" Width="*" Binding="{Binding State}" />
+                    <DataGridTextColumn Header="Worker" Width="Auto" Binding="{Binding CurrentWorker}" />
                 </DataGrid.Columns>
             </DataGrid>
             
@@ -256,7 +250,7 @@
             </StackPanel>
             <DataGrid Grid.Row="3" Grid.Column="0"
                       Margin="10,0,5,10" 
-                      ItemsSource="{Binding WorkersA}"
+                      ItemsSource="{Binding WorkersGroupA}"
                       SelectionMode="Single"
                       CanUserSortColumns="False"
                       IsReadOnly="True"
@@ -274,6 +268,9 @@
                 
                 <DataGrid.Columns>
                     <DataGridTextColumn Header="ID" Width="Auto" Binding="{Binding Id}" />
+                    <DataGridTextColumn Header="Place" Width="Auto" Binding="{Binding Place}" />
+                    <DataGridTextColumn Header="State" Width="*" Binding="{Binding State}" />
+                    <DataGridTextColumn Header="Order" Width="*" Binding="{Binding Order}" />
                 </DataGrid.Columns>
             </DataGrid>
             
@@ -292,7 +289,7 @@
             </StackPanel>
             <DataGrid Grid.Row="3" Grid.Column="1"
                       Margin="5,0,5,10" 
-                      ItemsSource="{Binding WorkersB}"
+                      ItemsSource="{Binding WorkersGroupB}"
                       SelectionMode="Single"
                       CanUserSortColumns="False"
                       IsReadOnly="True"
@@ -310,6 +307,9 @@
                 
                 <DataGrid.Columns>
                     <DataGridTextColumn Header="ID" Width="Auto" Binding="{Binding Id}" />
+                    <DataGridTextColumn Header="Place" Width="Auto" Binding="{Binding Place}" />
+                    <DataGridTextColumn Header="State" Width="*" Binding="{Binding State}" />
+                    <DataGridTextColumn Header="Order" Width="*" Binding="{Binding Order}" />
                 </DataGrid.Columns>
             </DataGrid>
             
@@ -328,7 +328,7 @@
             </StackPanel>
             <DataGrid Grid.Row="3" Grid.Column="2"
                       Margin="5,0,10,10" 
-                      ItemsSource="{Binding WorkersC}"
+                      ItemsSource="{Binding WorkersGroupC}"
                       SelectionMode="Single"
                       CanUserSortColumns="False"
                       IsReadOnly="True"
@@ -346,6 +346,9 @@
                 
                 <DataGrid.Columns>
                     <DataGridTextColumn Header="ID" Width="Auto" Binding="{Binding Id}" />
+                    <DataGridTextColumn Header="Place" Width="Auto" Binding="{Binding Place}" />
+                    <DataGridTextColumn Header="State" Width="*" Binding="{Binding State}" />
+                    <DataGridTextColumn Header="Order" Width="*" Binding="{Binding Order}" />
                 </DataGrid.Columns>
             </DataGrid>
             

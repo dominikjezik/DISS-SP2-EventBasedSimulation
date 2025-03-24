@@ -26,5 +26,6 @@
 
     <ItemGroup>
       <ProjectReference Include="..\DiscreteSimulation.Core\DiscreteSimulation.Core.csproj" />
+      <ProjectReference Include="..\DiscreteSimulation.FurnitureManufacturer\DiscreteSimulation.FurnitureManufacturer.csproj" />
     </ItemGroup>
 </Project>

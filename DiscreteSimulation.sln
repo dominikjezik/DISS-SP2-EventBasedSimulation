@@ -6,6 +6,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DiscreteSimulation.Core", "
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DiscreteSimulation.Console", "DiscreteSimulation.Console\DiscreteSimulation.Console.csproj", "{933D6A70-0320-404C-8A99-46954F69A514}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DiscreteSimulation.FurnitureManufacturer", "DiscreteSimulation.FurnitureManufacturer\DiscreteSimulation.FurnitureManufacturer.csproj", "{43B72110-B364-42C9-8FE3-4DFD628F302D}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -24,5 +26,9 @@ Global
 		{933D6A70-0320-404C-8A99-46954F69A514}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{933D6A70-0320-404C-8A99-46954F69A514}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{933D6A70-0320-404C-8A99-46954F69A514}.Release|Any CPU.Build.0 = Release|Any CPU
+		{43B72110-B364-42C9-8FE3-4DFD628F302D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{43B72110-B364-42C9-8FE3-4DFD628F302D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{43B72110-B364-42C9-8FE3-4DFD628F302D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{43B72110-B364-42C9-8FE3-4DFD628F302D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

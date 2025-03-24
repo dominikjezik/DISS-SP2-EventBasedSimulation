@@ -2,19 +2,24 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
-using DiscreteSimulation.Core.FurnitureManufacturer.Entities;
-using DiscreteSimulation.Core.TicketStore;
-using DiscreteSimulation.Core.Warehouse;
+using DiscreteSimulation.FurnitureManufacturer.DTOs;
+using DiscreteSimulation.FurnitureManufacturer.Simulation;
+using DiscreteSimulation.FurnitureManufacturer.TicketStore;
+using DiscreteSimulation.FurnitureManufacturer.Warehouse;
 
 namespace DiscreteSimulation.GUI.ViewModels;
 
 public class MainWindowViewModel : ViewModelBase
 {
+    private readonly FurnitureManufacturerSimulation _simulation = new();
+    
     private readonly TicketStoreSimulation _ticketStoreSimulation = new();
     
-    private readonly WarehouseSimulation _simulation = new();
+    private readonly WarehouseSimulation _warehouseSimulation = new();
     
-    public WarehouseSimulation Simulation => _simulation;
+    public FurnitureManufacturerSimulation Simulation => _simulation;
+    
+    public WarehouseSimulation WarehouseSimulation => _warehouseSimulation;
     
     public TicketStoreSimulation TicketStoreSimulation => _ticketStoreSimulation;
     
@@ -67,7 +72,29 @@ public class MainWindowViewModel : ViewModelBase
 
     public void PauseResumeSimulation()
     {
+        if (Simulation.IsSimulationPaused)
+        {
+            Simulation.ResumeSimulation();
+            PauseResumeSimulationButtonText = "Pause";
+        }
+        else
+        {
+            Simulation.PauseSimulation();
+            PauseResumeSimulationButtonText = "Resume";
+        }
         
+        /*
+        if (TicketStoreSimulation.IsSimulationPaused)
+        {
+            TicketStoreSimulation.ResumeSimulation();
+            PauseResumeSimulationButtonText = "Pause";
+        }
+        else
+        {
+            TicketStoreSimulation.PauseSimulation();
+            PauseResumeSimulationButtonText = "Resume";
+        }
+        */
     }
     
     public bool IsDefaultSpeedButtonEnabled => SelectedSpeedIndex != 0 && (_isStartSimulationButtonEnabled || _selectedSpeedIndex != SpeedOptions.Count - 1);
@@ -108,7 +135,8 @@ public class MainWindowViewModel : ViewModelBase
             OnPropertyChanged(nameof(IsSpeedMaxButtonEnabled));
             OnPropertyChanged(nameof(IsSpeedSelectorEnabled));
             
-            TicketStoreSimulation.SimulationSpeed = SpeedOptions.ElementAt(SelectedSpeedIndex).Key;
+            Simulation.SimulationSpeed = SpeedOptions.ElementAt(SelectedSpeedIndex).Key;
+            //TicketStoreSimulation.SimulationSpeed = SpeedOptions.ElementAt(SelectedSpeedIndex).Key;
         }
     }
 
@@ -198,7 +226,7 @@ public class MainWindowViewModel : ViewModelBase
     
     public bool IsMultipleReplications => !IsSingleReplication;
     
-    private int _maxReplicationTime = 100_000_000;
+    private int _maxReplicationTime = 7_171_200;
     
     public int MaxReplicationTime
     {
@@ -238,7 +266,7 @@ public class MainWindowViewModel : ViewModelBase
         }
     }
 
-    private string _currentSimulationTime = "0";
+    private string _currentSimulationTime = "[Day 1] 06:00:00";
     
     public string CurrentSimulationTime
     {
@@ -249,20 +277,29 @@ public class MainWindowViewModel : ViewModelBase
             OnPropertyChanged();
         }
     }
-    
-    private ObservableCollection<Order> _orders =
-    [
-        new Order()
-        {
-            Id = 1,
-            Type = default,
-            State = "Waiting",
-            Place = "Supplier",
-            ArrivalTime = 0
-        }
-    ];
 
-    public ObservableCollection<Order> Orders
+    public void SetCurrentSimulationTime(double simulationTime)
+    {
+        var workingDays = Math.Floor(simulationTime / 28_800);
+        simulationTime -= workingDays * 28_800;
+        
+        var hours = Math.Floor(simulationTime / 3_600);
+        simulationTime -= hours * 3_600;
+        
+        var minutes = Math.Floor(simulationTime / 60);
+        simulationTime -= minutes * 60;
+        
+        var seconds = Math.Floor(simulationTime);
+        simulationTime -= seconds;
+        
+        hours += 6;
+
+        CurrentSimulationTime = $"[Day {workingDays + 1}] {hours:00}:{minutes:00}:{seconds:00}";
+    }
+
+    private ObservableCollection<OrderDTO> _orders = [];
+
+    public ObservableCollection<OrderDTO> Orders
     {
         get => _orders;
         set {
@@ -271,16 +308,9 @@ public class MainWindowViewModel : ViewModelBase
         }
     }
 
-    private ObservableCollection<AssemblyLine> _assemblyLines =
-    [
-        new AssemblyLine()
-        {
-            Id = 1,
-            Activity = "Idle"
-        }
-    ];
+    private ObservableCollection<AssemblyLineDTO> _assemblyLines = [];
     
-    public ObservableCollection<AssemblyLine> AssemblyLines
+    public ObservableCollection<AssemblyLineDTO> AssemblyLines
     {
         get => _assemblyLines;
         set {
@@ -288,54 +318,36 @@ public class MainWindowViewModel : ViewModelBase
             OnPropertyChanged();
         }
     }
+
+    private ObservableCollection<WorkerDTO> _workersGroupA = [];
     
-    private ObservableCollection<Worker> _workersA =
-    [
-        new Worker()
-        {
-            Id = 1
-        }
-    ];
-    
-    public ObservableCollection<Worker> WorkersA
+    public ObservableCollection<WorkerDTO> WorkersGroupA
     {
-        get => _workersA;
+        get => _workersGroupA;
         set {
-            _workersA = value;
+            _workersGroupA = value;
             OnPropertyChanged();
         }
     }
     
-    private ObservableCollection<Worker> _workersB =
-    [
-        new Worker()
-        {
-            Id = 1
-        }
-    ];
+    private ObservableCollection<WorkerDTO> _workersGroupB = [];
     
-    public ObservableCollection<Worker> WorkersB
+    public ObservableCollection<WorkerDTO> WorkersGroupB
     {
-        get => _workersB;
+        get => _workersGroupB;
         set {
-            _workersB = value;
+            _workersGroupB = value;
             OnPropertyChanged();
         }
     }
     
-    private ObservableCollection<Worker> _workersC =
-    [
-        new Worker()
-        {
-            Id = 1
-        }
-    ];
+    private ObservableCollection<WorkerDTO> _workersGroupC = [];
     
-    public ObservableCollection<Worker> WorkersC
+    public ObservableCollection<WorkerDTO> WorkersGroupC
     {
-        get => _workersC;
+        get => _workersGroupC;
         set {
-            _workersC = value;
+            _workersGroupC = value;
             OnPropertyChanged();
         }
     }
