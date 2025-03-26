@@ -20,14 +20,14 @@ public class MaterialCuttingCompleted : FurnitureManufacturerBaseEvent
         
         CurrentWorker.CurrentOrder = null;
         
-        var availableWorker = Simulation.GetAvailableWorker(WorkerGroup.GroupC);
+        var availableWorker = Simulation.GetAvailableWorker(WorkerGroup.GroupC, currentAssemblyLine);
         
         currentAssemblyLine.CurrentWorker = availableWorker;
         
         if (availableWorker == null)
         {
             // Pracovník nie je k dispozícii, materiál sa pridá do frontu čakajúcich narezaných materiálov
-            currentOrder.State = "Material cut (waiting in queue)";
+            currentOrder.State = "Material cut (in queue)";
             Simulation.PendingCutMaterialsQueue.Enqueue(currentOrder);
         }
         else
@@ -38,10 +38,10 @@ public class MaterialCuttingCompleted : FurnitureManufacturerBaseEvent
             
             double arrivalTime;
 
-            // TODO: Dodatočne preveriť či sme mu nezresetovali polohu!
             if (availableWorker.CurrentAssemblyLine == currentAssemblyLine)
             {
                 arrivalTime = Simulation.SimulationTime;
+                availableWorker.CurrentAssemblyLine?.IdleWorkers.Remove(availableWorker);
             }
             else if (availableWorker.IsInWarehouse)
             {
@@ -51,11 +51,9 @@ public class MaterialCuttingCompleted : FurnitureManufacturerBaseEvent
             }
             else if (availableWorker.CurrentAssemblyLine != null)
             {
-                // TODO: Naimplementovať aj v ďalších eventoch tento riadok!
-                availableWorker.CurrentAssemblyLine?.IdleWorkers.Remove(CurrentWorker);
-                
                 arrivalTime = Simulation.SimulationTime + Simulation.ArrivalTimeBetweenTwoLinesGenerator.Next();
                 availableWorker.IsMovingToAssemblyLine = true;
+                availableWorker.CurrentAssemblyLine?.IdleWorkers.Remove(availableWorker);
             }
             else
             {

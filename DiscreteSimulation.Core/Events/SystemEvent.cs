@@ -10,24 +10,14 @@ internal class SystemEvent : BaseEvent
 
     public override void Execute()
     {
-        // TODO: Parametre delta a sleep ms vytiahnut na GUI
-        
-        // var delta = 1;
-        // var simulationSpeed = EventSimulationCore.SimulationSpeed;
-        // var sleepTime = (delta / simulationSpeed) * 1000;
-        
         if (double.IsInfinity(EventSimulationCore.SimulationSpeed))
         {
             return;
         }
-
-        var sleepTime = 100;
-        var simulationSpeed = EventSimulationCore.SimulationSpeed;
-        var delta = simulationSpeed * sleepTime / 1000;
         
-        Thread.Sleep(sleepTime);
+        Thread.Sleep(EventSimulationCore.SleepTime);
         
-        Time = EventSimulationCore.SimulationTime + delta;
+        Time = EventSimulationCore.SimulationTime + EventSimulationCore.Delta;
         EventSimulationCore.ScheduleEvent(this);
     }
 }

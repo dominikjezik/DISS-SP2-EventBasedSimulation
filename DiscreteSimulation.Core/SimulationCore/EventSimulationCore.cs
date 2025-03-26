@@ -14,6 +14,12 @@ public abstract class EventSimulationCore : MonteCarloSimulationCore
     
     public double SimulationSpeed { get; set; } = 1;
     
+    public int SleepTime { get; set; } = 100;
+    
+    public double Delta => SimulationSpeed * SleepTime / 1000.0;
+    
+    protected bool IsReplicationStopped { get; set; } = false;
+    
     public void ScheduleEvent(BaseEvent eventToSchedule)
     {
         if (eventToSchedule.Time < SimulationTime)
@@ -23,7 +29,13 @@ public abstract class EventSimulationCore : MonteCarloSimulationCore
         
         _eventCalendar.Enqueue(eventToSchedule, eventToSchedule.Time);
     }
-    
+
+    public override void BeforeSimulation(int? seedForSeedGenerator = null)
+    {
+        base.BeforeSimulation(seedForSeedGenerator);
+        IsReplicationStopped = false;
+    }
+
     public override void BeforeReplication()
     {
         SimulationTime = 0;
@@ -34,17 +46,27 @@ public abstract class EventSimulationCore : MonteCarloSimulationCore
     {
         if (CurrentMaxReplications == 1)
         {
-            // TODO: Parametre delta a sleep ms vytiahnut na GUI
-            
             var systemEvent = new SystemEvent(0, this);
             ScheduleEvent(systemEvent);
         }
         
-        while (_eventCalendar.Count != 0 && IsSimulationRunning && SimulationTime < MaxReplicationTime)
+        while (_eventCalendar.Count != 0 && SimulationTime <= MaxReplicationTime)
         {
+            if (!IsSimulationRunning)
+            {
+                IsReplicationStopped = true;
+                break;
+            }
+            
             while (IsSimulationPaused)
             {
-                // TODO: Asi aj check na stop simulacie a nasledne stopnutie?
+                // Ak bola simulacia stopnuta počas toho ako bola pozastavená
+                if (!IsSimulationRunning)
+                {
+                    IsReplicationStopped = true;
+                    IsSimulationPaused = false;
+                    break;
+                }
                 
                 Thread.Sleep(200);
             }
@@ -54,6 +76,11 @@ public abstract class EventSimulationCore : MonteCarloSimulationCore
             if (nextEvent.Time < SimulationTime)
             {
                 throw new InvalidOperationException("Event time is less than simulation time.");
+            }
+            
+            if (nextEvent.Time > MaxReplicationTime)
+            {
+                break;
             }
             
             SimulationTime = nextEvent.Time;

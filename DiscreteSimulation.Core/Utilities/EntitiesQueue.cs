@@ -38,7 +38,7 @@ public class EntitiesQueue<TEntity>
         _lastChangeInQueueTime = 0;
     }
 
-    private void RefreshStatistics()
+    public void RefreshStatistics()
     {
         var timeInterval = _eventSimulationCore.SimulationTime - _lastChangeInQueueTime;
         var queueLength = _queue.Count;

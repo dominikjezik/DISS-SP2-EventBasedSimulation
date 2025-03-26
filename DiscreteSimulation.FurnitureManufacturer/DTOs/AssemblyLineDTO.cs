@@ -78,11 +78,29 @@ public class AssemblyLineDTO : INotifyPropertyChanged
             CurrentWorker += ")";
         }
     }
+    
+    public void Update(AssemblyLineDTO assemblyLineDTO)
+    {
+        Id = assemblyLineDTO.Id;
+        CurrentOrder = assemblyLineDTO.CurrentOrder;
+        CurrentWorker = assemblyLineDTO.CurrentWorker;
+        State = assemblyLineDTO.State;
+    }
 
     public event PropertyChangedEventHandler? PropertyChanged;
 
     protected virtual void OnPropertyChanged(string propertyName)
     {
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+    }
+}
+
+public static class AssemblyLineDTOExtensions
+{
+    public static AssemblyLineDTO ToDTO(this AssemblyLine assemblyLine)
+    {
+        var assemblyLineDTO = new AssemblyLineDTO();
+        assemblyLineDTO.Update(assemblyLine);
+        return assemblyLineDTO;
     }
 }

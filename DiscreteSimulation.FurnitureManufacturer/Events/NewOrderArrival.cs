@@ -16,10 +16,10 @@ public class NewOrderArrival : FurnitureManufacturerBaseEvent
     {
         var newOrder = GenerateOrder();
         
-        Simulation.UnfinishedOrders.Add(newOrder);
+        Simulation.Orders.Add(newOrder);
         
         // Získanie volného pracovníka zo skupiny A
-        var availableWorker = Simulation.GetAvailableWorker(WorkerGroup.GroupA);
+        var availableWorker = Simulation.GetAvailableWorker(WorkerGroup.GroupA, null);
 
         if (availableWorker == null)
         {

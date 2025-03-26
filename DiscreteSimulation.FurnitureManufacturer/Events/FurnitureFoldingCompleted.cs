@@ -34,7 +34,7 @@ public class FurnitureFoldingCompleted : FurnitureManufacturerBaseEvent
         }
         else
         {
-            var availableWorker = Simulation.GetAvailableWorker(WorkerGroup.GroupC);
+            var availableWorker = Simulation.GetAvailableWorker(WorkerGroup.GroupC, currentAssemblyLine);
             
             currentAssemblyLine.CurrentWorker = availableWorker;
             
@@ -55,6 +55,7 @@ public class FurnitureFoldingCompleted : FurnitureManufacturerBaseEvent
                 if (availableWorker.CurrentAssemblyLine == currentAssemblyLine)
                 {
                     arrivalTime = Simulation.SimulationTime;
+                    availableWorker.CurrentAssemblyLine?.IdleWorkers.Remove(availableWorker);
                 }
                 else if (availableWorker.IsInWarehouse)
                 {
@@ -66,6 +67,7 @@ public class FurnitureFoldingCompleted : FurnitureManufacturerBaseEvent
                 {
                     arrivalTime = Simulation.SimulationTime + Simulation.ArrivalTimeBetweenTwoLinesGenerator.Next();
                     availableWorker.IsMovingToAssemblyLine = true;
+                    availableWorker.CurrentAssemblyLine?.IdleWorkers.Remove(availableWorker);
                 }
                 else
                 {

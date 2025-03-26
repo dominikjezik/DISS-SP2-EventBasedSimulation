@@ -1,6 +1,7 @@
 using DiscreteSimulation.Core.Generators;
 using DiscreteSimulation.Core.SimulationCore;
 using DiscreteSimulation.Core.Utilities;
+using DiscreteSimulation.FurnitureManufacturer.DTOs;
 using DiscreteSimulation.FurnitureManufacturer.Entities;
 using DiscreteSimulation.FurnitureManufacturer.Events;
 using DiscreteSimulation.FurnitureManufacturer.Utilities;
@@ -11,11 +12,11 @@ public class FurnitureManufacturerSimulation : EventSimulationCore
 {
     #region Parameters
     
-    public int CountOfWorkersGroupA { get; set; } = 3;
+    public int CountOfWorkersGroupA { get; set; }
     
-    public int CountOfWorkersGroupB { get; set; } = 5;
+    public int CountOfWorkersGroupB { get; set; }
     
-    public int CountOfWorkersGroupC { get; set; } = 4;
+    public int CountOfWorkersGroupC { get; set; }
 
     #endregion
     
@@ -75,7 +76,7 @@ public class FurnitureManufacturerSimulation : EventSimulationCore
     
     public List<AssemblyLine> AssemblyLines { get; private set; } = new();
     
-    public List<Order> UnfinishedOrders { get; private set; } = new();
+    public List<Order> Orders { get; private set; } = new();
     
     #endregion
 
@@ -84,6 +85,16 @@ public class FurnitureManufacturerSimulation : EventSimulationCore
     public Statistics AverageProcessingOrderTime { get; private set; } = new();
     
     public Statistics SimulationAverageProcessingOrderTime { get; private set; } = new();
+    
+    public Statistics SimulationAveragePendingOrdersCount { get; private set; } = new();
+    
+    public Statistics SimulationAverageWorkersGroupAUtilization { get; private set; } = new();
+    
+    public Statistics SimulationAverageWorkersGroupBUtilization { get; private set; } = new();
+    
+    public Statistics SimulationAverageWorkersGroupCUtilization { get; private set; } = new();
+    
+    public Statistics[] SimulationAverageAllWorkersUtilization { get; private set; }
 
     #endregion
 
@@ -102,6 +113,21 @@ public class FurnitureManufacturerSimulation : EventSimulationCore
         InitializeGenerators();
         
         SimulationAverageProcessingOrderTime.Clear();
+        SimulationAveragePendingOrdersCount.Clear();
+        SimulationAverageWorkersGroupAUtilization.Clear();
+        SimulationAverageWorkersGroupBUtilization.Clear();
+        SimulationAverageWorkersGroupCUtilization.Clear();
+        
+        WorkersGroupA = new Worker[CountOfWorkersGroupA];
+        WorkersGroupB = new Worker[CountOfWorkersGroupB];
+        WorkersGroupC = new Worker[CountOfWorkersGroupC];
+        
+        SimulationAverageAllWorkersUtilization = new Statistics[CountOfWorkersGroupA + CountOfWorkersGroupB + CountOfWorkersGroupC];
+        
+        for (var i = 0; i < SimulationAverageAllWorkersUtilization.Length; i++)
+        {
+            SimulationAverageAllWorkersUtilization[i] = new Statistics();
+        }
     }
 
     public override void BeforeReplication()
@@ -113,7 +139,7 @@ public class FurnitureManufacturerSimulation : EventSimulationCore
         PendingVarnishedMaterialsQueue.Clear();
         PendingFoldedClosetsQueue.Clear();
         
-        UnfinishedOrders.Clear();
+        Orders.Clear();
         AssemblyLines.Clear();
         InitializeWorkers();
         
@@ -134,15 +160,43 @@ public class FurnitureManufacturerSimulation : EventSimulationCore
     {
         base.AfterReplication();
         
-        // TODO: Ak replikacia nedobehla cela (simulacia bola predcasne ukoncena), tak sa nepridavaju hodnoty do statistik
+        // Ak bolo vykonávanie replikácie prerušené zastavením simulácie pouzívateľom
+        // výsledky tejto replikácie sa nezapočítavajú do štatistík
+        if (IsReplicationStopped)
+        {
+            return;
+        }
         
         SimulationAverageProcessingOrderTime.AddValue(AverageProcessingOrderTime.Mean);
+        
+        PendingOrdersQueue.RefreshStatistics();
+        SimulationAveragePendingOrdersCount.AddValue(PendingOrdersQueue.AverageQueueLength);
+        
+        for (var i = 0; i < WorkersGroupA.Length; i++)
+        {
+            WorkersGroupA[i].RefreshStatistics();
+            SimulationAverageAllWorkersUtilization[i].AddValue(WorkersGroupA[i].Utilization);
+        }
+        
+        for (var i = 0; i < WorkersGroupB.Length; i++)
+        {
+            WorkersGroupB[i].RefreshStatistics();
+            SimulationAverageAllWorkersUtilization[WorkersGroupA.Length + i].AddValue(WorkersGroupB[i].Utilization);
+        }
+        
+        for (var i = 0; i < WorkersGroupC.Length; i++)
+        {
+            WorkersGroupC[i].RefreshStatistics();
+            SimulationAverageAllWorkersUtilization[WorkersGroupA.Length + WorkersGroupB.Length + i].AddValue(WorkersGroupC[i].Utilization);
+        }
+        
+        SimulationAverageWorkersGroupAUtilization.AddValue(WorkersGroupA.Average(worker => worker.Utilization));
+        SimulationAverageWorkersGroupBUtilization.AddValue(WorkersGroupB.Average(worker => worker.Utilization));
+        SimulationAverageWorkersGroupCUtilization.AddValue(WorkersGroupC.Average(worker => worker.Utilization));
     }
 
-    public Worker? GetAvailableWorker(WorkerGroup workerGroup)
+    public Worker? GetAvailableWorker(WorkerGroup workerGroup, AssemblyLine? preferredAssemblyLine)
     {
-        // TODO: Preferencia na aktuálnu pozíciu pracovníka
-        
         Worker[] workers;
         
         switch (workerGroup)
@@ -160,7 +214,31 @@ public class FurnitureManufacturerSimulation : EventSimulationCore
                 throw new ArgumentException("Invalid worker group");
         }
         
-        return workers.FirstOrDefault(worker => !worker.IsBusy);
+        Worker? availableWorker = null;
+        Worker? availableWorkerFromWarehouse = null;
+
+        // Preferujeme najskôr pracovníka, ktorý sa už na danej linke nachádza,
+        // inak pracovníka, ktorý je v sklade (E(X) príchodu zo skladu je menší
+        // ako E(X) príchodu z inej linky) inak iný voľný pracovník
+        foreach (var worker in workers)
+        {
+            if (!worker.IsBusy && availableWorker == null)
+            {
+                availableWorker = worker;
+            }
+            
+            if (!worker.IsBusy && worker.CurrentAssemblyLine == preferredAssemblyLine)
+            {
+                return worker;
+            }
+            
+            if (!worker.IsBusy && worker.IsInWarehouse && availableWorkerFromWarehouse == null)
+            {
+                availableWorkerFromWarehouse = worker;
+            }
+        }
+
+        return availableWorkerFromWarehouse ?? availableWorker;
     }
 
     public AssemblyLine RequestFreeAssemblyLine()
@@ -185,17 +263,66 @@ public class FurnitureManufacturerSimulation : EventSimulationCore
         return newAssemblyLine;
     }
 
-    public void InitializeWorkers()
+    public List<OrderDTO> GetCurrentOrderDTOs()
     {
-        // Delete all workers
-        WorkersGroupA = new Worker[CountOfWorkersGroupA];
-        WorkersGroupB = new Worker[CountOfWorkersGroupB];
-        WorkersGroupC = new Worker[CountOfWorkersGroupC];
+        return Orders.Select(order => order.ToDTO()).ToList();
+    }
+    
+    public List<AssemblyLineDTO> GetCurrentAssemblyLineDTOs()
+    {
+        return AssemblyLines.Select(assemblyLine => assemblyLine.ToDTO()).ToList();
+    }
+    
+    public List<WorkerDTO> GetCurrentWorkerGroupADTOs()
+    {
+        return WorkersGroupA.Select(worker => worker.ToDTO()).ToList();
+    }
+    
+    public List<WorkerDTO> GetCurrentWorkerGroupBDTOs()
+    {
+        return WorkersGroupB.Select(worker => worker.ToDTO()).ToList();
+    }
+    
+    public List<WorkerDTO> GetCurrentWorkerGroupCDTOs()
+    {
+        return WorkersGroupC.Select(worker => worker.ToDTO()).ToList();
+    }
+    
+    public List<WorkerDTO> GetAllWorkersSimulationUtilization()
+    {
+        var workers = new List<WorkerDTO>();
         
+        for (int i = 0; i < SimulationAverageAllWorkersUtilization.Length; i++)
+        {
+            var utilization = SimulationAverageAllWorkersUtilization[i].ConfidenceInterval95();
+            
+            WorkerDTO? worker;
+            
+            if (i < WorkersGroupA.Length)
+            {
+                worker = WorkersGroupA[i].ToUtilizationDTO(utilization);
+            }
+            else if (i < WorkersGroupA.Length + WorkersGroupB.Length)
+            {
+                worker = WorkersGroupB[i - WorkersGroupA.Length].ToUtilizationDTO(utilization);
+            }
+            else
+            {
+                worker = WorkersGroupC[i - WorkersGroupA.Length - WorkersGroupB.Length].ToUtilizationDTO(utilization);
+            }
+            
+            workers.Add(worker);
+        }
+
+        return workers;
+    }
+
+    private void InitializeWorkers()
+    {
         // Initialize workers
         for (var i = 0; i < CountOfWorkersGroupA; i++)
         {
-            WorkersGroupA[i] = new Worker
+            WorkersGroupA[i] = new Worker(this)
             {
                 Id = i + 1,
                 Group = WorkerGroup.GroupA,
@@ -205,7 +332,7 @@ public class FurnitureManufacturerSimulation : EventSimulationCore
         
         for (var i = 0; i < CountOfWorkersGroupB; i++)
         {
-            WorkersGroupB[i] = new Worker
+            WorkersGroupB[i] = new Worker(this)
             {
                 Id = i + 1,
                 Group = WorkerGroup.GroupB,
@@ -215,7 +342,7 @@ public class FurnitureManufacturerSimulation : EventSimulationCore
 
         for (var i = 0; i < CountOfWorkersGroupC; i++)
         {
-            WorkersGroupC[i] = new Worker
+            WorkersGroupC[i] = new Worker(this)
             {
                 Id = i + 1,
                 Group = WorkerGroup.GroupC,

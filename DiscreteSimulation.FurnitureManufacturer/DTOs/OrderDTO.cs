@@ -74,11 +74,29 @@ public class OrderDTO : INotifyPropertyChanged
         State = order.State;
         ArrivalTime = order.ArrivalTime.ToString("F2");
     }
+    
+    public void Update(OrderDTO orderDTO)
+    {
+        Id = orderDTO.Id;
+        Type = orderDTO.Type;
+        State = orderDTO.State;
+        ArrivalTime = orderDTO.ArrivalTime;
+    }
 
     public event PropertyChangedEventHandler? PropertyChanged;
 
     protected virtual void OnPropertyChanged(string propertyName)
     {
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+    }
+}
+
+public static class OrderDTOExtensions
+{
+    public static OrderDTO ToDTO(this Order order)
+    {
+        var orderDTO = new OrderDTO();
+        orderDTO.Update(order);
+        return orderDTO;
     }
 }

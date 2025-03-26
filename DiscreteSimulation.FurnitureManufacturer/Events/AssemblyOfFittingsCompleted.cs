@@ -16,7 +16,6 @@ public class AssemblyOfFittingsCompleted : FurnitureManufacturerBaseEvent
         var currentAssemblyLine = CurrentWorker.CurrentAssemblyLine;
         
         CurrentWorker.CurrentOrder = null;
-        CurrentWorker.CurrentAssemblyLine = null;
 
         Simulation.AverageProcessingOrderTime.AddValue(Simulation.SimulationTime - currentOrder.ArrivalTime);
         

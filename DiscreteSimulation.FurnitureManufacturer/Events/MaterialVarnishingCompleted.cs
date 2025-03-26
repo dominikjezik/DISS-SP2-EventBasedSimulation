@@ -20,8 +20,8 @@ public class MaterialVarnishingCompleted : FurnitureManufacturerBaseEvent
         var currentAssemblyLine = CurrentWorker.CurrentAssemblyLine;
         
         CurrentWorker.CurrentOrder = null;
-        
-        var availableWorker = Simulation.GetAvailableWorker(WorkerGroup.GroupB);
+
+        var availableWorker = Simulation.GetAvailableWorker(WorkerGroup.GroupB, currentAssemblyLine);
         
         currentAssemblyLine.CurrentWorker = availableWorker;
 
@@ -42,6 +42,7 @@ public class MaterialVarnishingCompleted : FurnitureManufacturerBaseEvent
             if (availableWorker.CurrentAssemblyLine == currentAssemblyLine)
             {
                 arrivalTime = Simulation.SimulationTime;
+                availableWorker.CurrentAssemblyLine?.IdleWorkers.Remove(availableWorker);
             }
             else if (availableWorker.IsInWarehouse)
             {
@@ -53,6 +54,7 @@ public class MaterialVarnishingCompleted : FurnitureManufacturerBaseEvent
             {
                 arrivalTime = Simulation.SimulationTime + Simulation.ArrivalTimeBetweenTwoLinesGenerator.Next();
                 availableWorker.IsMovingToAssemblyLine = true;
+                availableWorker.CurrentAssemblyLine?.IdleWorkers.Remove(availableWorker);
             }
             else
             {

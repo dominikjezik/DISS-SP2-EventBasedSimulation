@@ -10,6 +10,7 @@ public class WorkerDTO : INotifyPropertyChanged
     private string _place;
     private string _order;
     private string _state;
+    private string _utilization;
 
     public string Id
     {
@@ -54,8 +55,19 @@ public class WorkerDTO : INotifyPropertyChanged
             OnPropertyChanged(nameof(State));
         }
     }
+    
+    public string Utilization
+    {
+        get => _utilization;
+        set
+        {
+            if (value == _utilization) return;
+            _utilization = value;
+            OnPropertyChanged(nameof(Utilization));
+        }
+    }
 
-    public void Update(Worker worker, WorkerGroup workerGroup)
+    public void Update(Worker worker)
     {
         Id = worker.DisplayId;
         
@@ -90,6 +102,17 @@ public class WorkerDTO : INotifyPropertyChanged
         {
             State = worker.CurrentOrder.State;
         }
+        
+        Utilization = worker.Utilization.ToString("0.00%");
+    }
+    
+    public void Update(WorkerDTO workerDTO)
+    {
+        Id = workerDTO.Id;
+        Place = workerDTO.Place;
+        Order = workerDTO.Order;
+        State = workerDTO.State;
+        Utilization = workerDTO.Utilization;
     }
 
     public event PropertyChangedEventHandler? PropertyChanged;
@@ -97,5 +120,38 @@ public class WorkerDTO : INotifyPropertyChanged
     protected virtual void OnPropertyChanged(string propertyName)
     {
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+    }
+}
+
+public static class WorkerDTOExtensions
+{
+    public static WorkerDTO ToDTO(this Worker worker)
+    {
+        var dto = new WorkerDTO();
+        dto.Update(worker);
+        return dto;
+    }
+    
+    public static WorkerDTO ToUtilizationDTO(this Worker worker, (double, double) utilization)
+    {
+        var dto = new WorkerDTO();
+        dto.Update(worker);
+        
+        if (worker.Group == WorkerGroup.GroupA)
+        {
+            dto.State = "Worker group A";
+        } 
+        else if (worker.Group == WorkerGroup.GroupB)
+        {
+            dto.State = "Worker group B";
+        }
+        else
+        {
+            dto.State = "Worker group C";
+        }
+        
+        dto.Utilization = $"<{(utilization.Item1*100):F2} ; {(utilization.Item2*100):F2}>";
+        
+        return dto;
     }
 }
