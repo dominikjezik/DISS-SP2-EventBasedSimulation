@@ -8,6 +8,7 @@ using Avalonia.Interactivity;
 using Avalonia.Threading;
 using DiscreteSimulation.FurnitureManufacturer.DTOs;
 using DiscreteSimulation.FurnitureManufacturer.Entities;
+using DiscreteSimulation.FurnitureManufacturer.Utilities;
 using DiscreteSimulation.GUI.ViewModels;
 using ScottPlot;
 using ScottPlot.AutoScalers;
@@ -19,6 +20,7 @@ public partial class MainWindow : Window
     private readonly MainWindowViewModel _viewModel;
     
     private readonly List<Coordinates> _replicationsProcessingOrderTimePlotData = new();
+    private string _selectedCoordinatesTimeUnit = "seconds";
     private int _skipFirstNReplications = 0;
     private bool _stopSimulationRequested = false;
     
@@ -74,6 +76,10 @@ public partial class MainWindow : Window
         _viewModel.WorkersGroupA = new ObservableCollection<WorkerDTO>();
         _viewModel.WorkersGroupB = new ObservableCollection<WorkerDTO>();
         _viewModel.WorkersGroupC = new ObservableCollection<WorkerDTO>();
+        _viewModel.PendingOrdersQueue = new ObservableCollection<OrderDTO>();
+        _viewModel.PendingCutMaterialsQueue = new ObservableCollection<OrderDTO>();
+        _viewModel.PendingVarnishedMaterialsQueue = new ObservableCollection<OrderDTO>();
+        _viewModel.PendingFoldedClosetsQueue = new ObservableCollection<OrderDTO>();
         _viewModel.SimulationAllWorkersUtilization = new ObservableCollection<WorkerDTO>();
         
         for (int i = 0; i < _viewModel.Simulation.CountOfWorkersGroupA; i++)
@@ -195,6 +201,10 @@ public partial class MainWindow : Window
         var workersGroupCUtilization = _viewModel.Simulation.WorkersGroupC.Average(worker => worker.Utilization) * 100;
 
         var orders = _viewModel.Simulation.GetCurrentOrderDTOs();
+        var pendingOrders = _viewModel.Simulation.GetCurrentPendingOrdersQueue();
+        var pendingCutMaterials = _viewModel.Simulation.GetCurrentPendingCutMaterialsQueue();
+        var pendingVarnishedMaterials = _viewModel.Simulation.GetCurrentPendingVarnishedMaterialsQueue();
+        var pendingFoldedClosets = _viewModel.Simulation.GetCurrentPendingFoldedClosetsQueue();
         var assemblyLines = _viewModel.Simulation.GetCurrentAssemblyLineDTOs();
         var workersGroupA = _viewModel.Simulation.GetCurrentWorkerGroupADTOs();
         var workersGroupB = _viewModel.Simulation.GetCurrentWorkerGroupBDTOs();
@@ -202,20 +212,27 @@ public partial class MainWindow : Window
         
         Dispatcher.UIThread.Post(() =>
         {
-            _viewModel.SetCurrentSimulationTime(simulationTime);
+            _viewModel.CurrentSimulationTime = simulationTime.FormatToSimulationTime();
             _viewModel.ReplicationOrderProcessingTime = $"{averageProcessingOrderTime:F2}";
             _viewModel.ReplicationPendingOrders = $"{averagePendingOrdersCount:F2}";
+            
             _viewModel.PendingOrdersQueueCount = $"{pendingOrdersQueueCount}";
             _viewModel.PendingCutMaterialsQueueCount = $"{pendingCutMaterialsQueueCount}";
             _viewModel.PendingVarnishedMaterialsQueueCount = $"{pendingVarnishedMaterialsQueueCount}";
             _viewModel.PendingFoldedClosetsQueueCount = $"{pendingFoldedClosetsQueueCount}";
-            _viewModel.ReplicationWorkersGroupAUtilization = $"({workersGroupAUtilization:F2} %)";
-            _viewModel.ReplicationWorkersGroupBUtilization = $"({workersGroupBUtilization:F2} %)";
-            _viewModel.ReplicationWorkersGroupCUtilization = $"({workersGroupCUtilization:F2} %)";
+            _viewModel.ReplicationWorkersGroupAUtilization = $"{workersGroupAUtilization:F2}";
+            _viewModel.ReplicationWorkersGroupBUtilization = $"{workersGroupBUtilization:F2}";
+            _viewModel.ReplicationWorkersGroupCUtilization = $"{workersGroupCUtilization:F2}";
             
-            UpdateOrdersList(orders);
-            UpdateAssemblyLinesList(assemblyLines);
-            UpdateWorkersLists(workersGroupA, workersGroupB, workersGroupC);
+            SynchronizeCollection(_viewModel.Orders, orders);
+            SynchronizeCollection(_viewModel.AssemblyLines, assemblyLines);
+            SynchronizeCollection(_viewModel.WorkersGroupA, workersGroupA);
+            SynchronizeCollection(_viewModel.WorkersGroupB, workersGroupB);
+            SynchronizeCollection(_viewModel.WorkersGroupC, workersGroupC);
+            SynchronizeCollection(_viewModel.PendingOrdersQueue, pendingOrders);
+            SynchronizeCollection(_viewModel.PendingCutMaterialsQueue, pendingCutMaterials);
+            SynchronizeCollection(_viewModel.PendingVarnishedMaterialsQueue, pendingVarnishedMaterials);
+            SynchronizeCollection(_viewModel.PendingFoldedClosetsQueue, pendingFoldedClosets);
         });
     }
 
@@ -233,7 +250,14 @@ public partial class MainWindow : Window
         
         var averageProcessingOrderTime = _viewModel.Simulation.SimulationAverageProcessingOrderTime.Mean;
         var averageProcessingOrderTimeCI = _viewModel.Simulation.SimulationAverageProcessingOrderTime.ConfidenceInterval95();
+        var averagePendingOrdersCount = _viewModel.Simulation.SimulationAveragePendingOrdersCount.Mean;
         var averagePendingOrdersCountCI = _viewModel.Simulation.SimulationAveragePendingOrdersCount.ConfidenceInterval95();
+        var averagePendingCutMaterialsCount = _viewModel.Simulation.SimulationAveragePendingCutMaterialsCount.Mean;
+        var averagePendingCutMaterialsCountCI = _viewModel.Simulation.SimulationAveragePendingCutMaterialsCount.ConfidenceInterval95();
+        var averagePendingVarnishedMaterialsCount = _viewModel.Simulation.SimulationAveragePendingVarnishedMaterialsCount.Mean;
+        var averagePendingVarnishedMaterialsCountCI = _viewModel.Simulation.SimulationAveragePendingVarnishedMaterialsCount.ConfidenceInterval95();
+        var averagePendingFoldedClosetsCount = _viewModel.Simulation.SimulationAveragePendingFoldedClosetsCount.Mean;
+        var averagePendingFoldedClosetsCountCI = _viewModel.Simulation.SimulationAveragePendingFoldedClosetsCount.ConfidenceInterval95();
         var averageWorkersGroupAUtilizationCI = _viewModel.Simulation.SimulationAverageWorkersGroupAUtilization.ConfidenceInterval95();
         var averageWorkersGroupBUtilizationCI = _viewModel.Simulation.SimulationAverageWorkersGroupBUtilization.ConfidenceInterval95();
         var averageWorkersGroupCUtilizationCI = _viewModel.Simulation.SimulationAverageWorkersGroupCUtilization.ConfidenceInterval95();
@@ -243,19 +267,33 @@ public partial class MainWindow : Window
         Dispatcher.UIThread.Post(() =>
         {
             _viewModel.CurrentReplication = currentReplication.ToString();
-            _viewModel.SimulationCurrentProcessingOrderTimeSeconds = $"<{averageProcessingOrderTimeCI.Item1:F2} ; {averageProcessingOrderTimeCI.Item2:F2}>";
-            _viewModel.SimulationCurrentProcessingOrderTimeMinutes = $"<{averageProcessingOrderTimeCI.Item1 / 60:F2} ; {averageProcessingOrderTimeCI.Item2 / 60:F2}>";
-            _viewModel.SimulationCurrentProcessingOrderTimeHours = $"<{averageProcessingOrderTimeCI.Item1 / 3600:F2} ; {averageProcessingOrderTimeCI.Item2 / 3600:F2}>";
-            _viewModel.SimulationPendingOrders = $"<{averagePendingOrdersCountCI.Item1:F2} ; {averagePendingOrdersCountCI.Item2:F2}>";
-            _viewModel.SimulationWorkersAUtilization = $"<{(averageWorkersGroupAUtilizationCI.Item1*100):F2} ; {(averageWorkersGroupAUtilizationCI.Item2*100):F2}>";
-            _viewModel.SimulationWorkersBUtilization = $"<{(averageWorkersGroupBUtilizationCI.Item1*100):F2} ; {(averageWorkersGroupBUtilizationCI.Item2*100):F2}>";
-            _viewModel.SimulationWorkersCUtilization = $"<{(averageWorkersGroupCUtilizationCI.Item1*100):F2} ; {(averageWorkersGroupCUtilizationCI.Item2*100):F2}>";
+            _viewModel.SimulationCurrentProcessingOrderTimeSeconds = $"{averageProcessingOrderTime:F2}";
+            _viewModel.SimulationCurrentProcessingOrderTimeMinutes = $"{averageProcessingOrderTime / 60:F2}";
+            _viewModel.SimulationCurrentProcessingOrderTimeHours = $"{averageProcessingOrderTime / 3600:F2}";
+            _viewModel.SimulationCurrentProcessingOrderTimeSecondsCI = $"<{averageProcessingOrderTimeCI.Item1:F2} ; {averageProcessingOrderTimeCI.Item2:F2}>";
+            _viewModel.SimulationCurrentProcessingOrderTimeMinutesCI = $"<{averageProcessingOrderTimeCI.Item1 / 60:F2} ; {averageProcessingOrderTimeCI.Item2 / 60:F2}>";
+            _viewModel.SimulationCurrentProcessingOrderTimeHoursCI = $"<{averageProcessingOrderTimeCI.Item1 / 3600:F2} ; {averageProcessingOrderTimeCI.Item2 / 3600:F2}>";
+            _viewModel.SimulationPendingOrders = $"{averagePendingOrdersCount:F2}";
+            _viewModel.SimulationPendingOrdersCI = $"<{averagePendingOrdersCountCI.Item1:F2} ; {averagePendingOrdersCountCI.Item2:F2}>";
+            _viewModel.SimulationPendingCutMaterials = $"{averagePendingCutMaterialsCount:F2}";
+            _viewModel.SimulationPendingCutMaterialsCI = $"<{averagePendingCutMaterialsCountCI.Item1:F2} ; {averagePendingCutMaterialsCountCI.Item2:F2}>";
+            _viewModel.SimulationPendingVarnishedMaterials = $"{averagePendingVarnishedMaterialsCount:F2}";
+            _viewModel.SimulationPendingVarnishedMaterialsCI = $"<{averagePendingVarnishedMaterialsCountCI.Item1:F2} ; {averagePendingVarnishedMaterialsCountCI.Item2:F2}>";
+            _viewModel.SimulationPendingFoldedClosets = $"{averagePendingFoldedClosetsCount:F2}";
+            _viewModel.SimulationPendingFoldedClosetsCI = $"<{averagePendingFoldedClosetsCountCI.Item1:F2} ; {averagePendingFoldedClosetsCountCI.Item2:F2}>";
+            _viewModel.SimulationWorkersAUtilization = $"{averageWorkersGroupAUtilizationCI.Item1 * 100:F2}";
+            _viewModel.SimulationWorkersAUtilizationCI = $"<{(averageWorkersGroupAUtilizationCI.Item1*100):F2} ; {(averageWorkersGroupAUtilizationCI.Item2*100):F2}>";
+            _viewModel.SimulationWorkersBUtilization = $"{averageWorkersGroupBUtilizationCI.Item1 * 100:F2}";
+            _viewModel.SimulationWorkersBUtilizationCI = $"<{(averageWorkersGroupBUtilizationCI.Item1*100):F2} ; {(averageWorkersGroupBUtilizationCI.Item2*100):F2}>";
+            _viewModel.SimulationWorkersCUtilization = $"{averageWorkersGroupCUtilizationCI.Item1 * 100:F2}";
+            _viewModel.SimulationWorkersCUtilizationCI = $"<{(averageWorkersGroupCUtilizationCI.Item1*100):F2} ; {(averageWorkersGroupCUtilizationCI.Item2*100):F2}>";
             
             for (int i = 0; i < allWorkersUtilization.Count; i++)
             {
                 _viewModel.SimulationAllWorkersUtilization[i].Id = allWorkersUtilization[i].Id;
                 _viewModel.SimulationAllWorkersUtilization[i].State = allWorkersUtilization[i].State;
                 _viewModel.SimulationAllWorkersUtilization[i].Utilization = allWorkersUtilization[i].Utilization;
+                _viewModel.SimulationAllWorkersUtilization[i].Place = allWorkersUtilization[i].Place;
             }
         });
         
@@ -276,77 +314,34 @@ public partial class MainWindow : Window
         
         Dispatcher.UIThread.Post(() => AddValueToProcessingOrderTimePlot(currentReplication, averageProcessingOrderTime));
     }
-    
-    public void UpdateOrdersList(List<OrderDTO> orders)
-    {
-        // Aktualizácia položiek objednávok
-        for (int i = 0; i < _viewModel.Orders.Count && i < orders.Count; i++)
-        {
-            _viewModel.Orders[i].Update(orders[i]);
-        }
-        
-        // Pridanie chýbajúcich položiek v tabuľke
-        for (int i = _viewModel.Orders.Count; i < orders.Count; i++)
-        {
-            var orderDto = new OrderDTO();
-            orderDto.Update(orders[i]);
-            _viewModel.Orders.Add(orderDto);
-        }
 
-        // Odstránenie položiek v tabuľke navyše
-        for (int i = _viewModel.Orders.Count - 1; i >= orders.Count; i--)
-        {
-            _viewModel.Orders.RemoveAt(i);
-        }
-    }
-    
-    public void UpdateAssemblyLinesList(List<AssemblyLineDTO> assemblyLines)
+    private void SynchronizeCollection<TItem>(ObservableCollection<TItem> targetList, List<TItem> sourceList) where TItem : IUpdatable<TItem>
     {
-        // Aktualizácia položiek linky
-        for (int i = 0; i < _viewModel.AssemblyLines.Count && i < assemblyLines.Count; i++)
+        // Aktualizácia položiek
+        for (int i = 0; i < targetList.Count && i < sourceList.Count; i++)
         {
-            _viewModel.AssemblyLines[i].Update(assemblyLines[i]);
+            targetList[i].Update(sourceList[i]);
         }
         
-        // Pridanie chýbajúcich položiek v tabuľke
-        for (int i = _viewModel.AssemblyLines.Count; i < assemblyLines.Count; i++)
+        // Pridanie chýbajúcich položiek v kolekcii
+        for (int i = targetList.Count; i < sourceList.Count; i++)
         {
-            var assemblyLineDto = new AssemblyLineDTO();
-            assemblyLineDto.Update(assemblyLines[i]);
-            _viewModel.AssemblyLines.Add(assemblyLineDto);
+            var item = Activator.CreateInstance<TItem>();
+            item.Update(sourceList[i]);
+            targetList.Add(item);
         }
         
-        // Odstránenie položiek v tabuľke navyše
-        for (int i = _viewModel.AssemblyLines.Count - 1; i >= assemblyLines.Count; i--)
+        // Odstránenie položiek v kolekcii navyše
+        for (int i = targetList.Count - 1; i >= sourceList.Count; i--)
         {
-            _viewModel.AssemblyLines.RemoveAt(i);
-        }
-    }
-
-    public void UpdateWorkersLists(List<WorkerDTO> workersGroupA, List<WorkerDTO> workersGroupB, List<WorkerDTO> workersGroupC)
-    {
-        // Aktualizácia položiek pracovníkov skupiny A
-        for (int i = 0; i < _viewModel.WorkersGroupA.Count && i < workersGroupA.Count; i++)
-        {
-            _viewModel.WorkersGroupA[i].Update(workersGroupA[i]);
-        }
-        
-        // Aktualizácia položiek pracovníkov skupiny B
-        for (int i = 0; i < _viewModel.WorkersGroupB.Count && i < workersGroupB.Count; i++)
-        {
-            _viewModel.WorkersGroupB[i].Update(workersGroupB[i]);
-        }
-        
-        // Aktualizácia položiek pracovníkov skupiny C
-        for (int i = 0; i < _viewModel.WorkersGroupC.Count && i < workersGroupC.Count; i++)
-        {
-            _viewModel.WorkersGroupC[i].Update(workersGroupC[i]);
+            targetList.RemoveAt(i);
         }
     }
     
     private void AddValueToProcessingOrderTimePlot(long replication, double processingOrderTime)
     {
-        _replicationsProcessingOrderTimePlotData.Add(new Coordinates(replication, processingOrderTime));
+        var newY = RecalculateCoordinateValue(processingOrderTime, "seconds");
+        _replicationsProcessingOrderTimePlotData.Add(new Coordinates(replication, newY));
 
         ProcessingOrderTimePlot.Plot.Axes.AutoScale();
         ProcessingOrderTimePlot.Refresh();
@@ -361,5 +356,68 @@ public partial class MainWindow : Window
         ProcessingOrderTimePlot.Plot.Axes.Left.Label.Text = "Processing order time";
 
         ProcessingOrderTimePlot.Plot.Axes.AutoScaler = new FractionalAutoScaler(.005, .015);
+    }
+
+    private void MenuItem_OnClick(object? sender, RoutedEventArgs e)
+    {
+        var menuItem = sender as MenuItem;
+        _viewModel.SelectedTimeUnits = menuItem.Header.ToString();
+        
+        //private readonly List<Coordinates> _replicationsProcessingOrderTimePlotData = new();
+        // recalculate points to selected time unit
+        var newData = new List<Coordinates>();
+        
+        foreach (var coordinates in _replicationsProcessingOrderTimePlotData)
+        {
+            var newX = coordinates.X;
+            var newY = RecalculateCoordinateValue(coordinates.Y);
+            
+            newData.Add(new Coordinates(newX, newY));
+        }
+        
+        _selectedCoordinatesTimeUnit = _viewModel.SelectedTimeUnits;
+        
+        _replicationsProcessingOrderTimePlotData.Clear();
+        
+        foreach (var coordinates in newData)
+        {
+            _replicationsProcessingOrderTimePlotData.Add(new Coordinates(coordinates.X, coordinates.Y));
+        }
+        
+        ProcessingOrderTimePlot.Plot.Axes.AutoScale();
+        ProcessingOrderTimePlot.Refresh();
+    }
+    
+    private double RecalculateCoordinateValue(double coordinate, string? currentTimeUnit = null)
+    {
+        if (currentTimeUnit == null)
+        {
+            currentTimeUnit = _selectedCoordinatesTimeUnit;
+        }
+        
+        return currentTimeUnit switch
+        {
+            "seconds" => _viewModel.SelectedTimeUnits switch
+            {
+                "seconds" => coordinate,
+                "minutes" => coordinate / 60,
+                "hours" => coordinate / 3600,
+                _ => coordinate
+            },
+            "minutes" => _viewModel.SelectedTimeUnits switch
+            {
+                "seconds" => coordinate * 60,
+                "minutes" => coordinate,
+                "hours" => coordinate / 60,
+                _ => coordinate
+            },
+            "hours" => _viewModel.SelectedTimeUnits switch
+            {
+                "seconds" => coordinate * 3600,
+                "minutes" => coordinate * 60,
+                "hours" => coordinate,
+                _ => coordinate
+            },
+        };
     }
 }

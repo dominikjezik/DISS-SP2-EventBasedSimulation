@@ -4,7 +4,7 @@ using DiscreteSimulation.FurnitureManufacturer.Utilities;
 
 namespace DiscreteSimulation.FurnitureManufacturer.DTOs;
 
-public class OrderDTO : INotifyPropertyChanged
+public class OrderDTO : INotifyPropertyChanged, IUpdatable<OrderDTO>
 {
     private int _id;
     private FurnitureType _type;
@@ -80,7 +80,7 @@ public class OrderDTO : INotifyPropertyChanged
         Id = orderDTO.Id;
         Type = orderDTO.Type;
         State = orderDTO.State;
-        ArrivalTime = orderDTO.ArrivalTime;
+        ArrivalTime = orderDTO.ArrivalTime.FormatToSimulationTime(shortFormat: true);
     }
 
     public event PropertyChangedEventHandler? PropertyChanged;

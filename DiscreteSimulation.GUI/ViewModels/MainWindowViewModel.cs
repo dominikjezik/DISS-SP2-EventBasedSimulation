@@ -112,6 +112,8 @@ public class MainWindowViewModel : ViewModelBase
             OnPropertyChanged(nameof(IsSpeedSelectorEnabled));
             
             Simulation.SimulationSpeed = SpeedOptions.ElementAt(SelectedSpeedIndex).Key;
+            
+            OnPropertyChanged(nameof(Delta));
         }
     }
 
@@ -195,7 +197,7 @@ public class MainWindowViewModel : ViewModelBase
 
     #region ReplicationControls
 
-    private long _replications = 1;
+    private long _replications = 10;
     
     public long Replications
     {
@@ -249,7 +251,7 @@ public class MainWindowViewModel : ViewModelBase
 
     public double Delta => _simulation.Delta;
     
-    private string _currentSimulationTime = "[Day 1] 06:00:00";
+    private string _currentSimulationTime = "[Week 1 - Monday] 06:00:00";
     
     public string CurrentSimulationTime
     {
@@ -259,25 +261,6 @@ public class MainWindowViewModel : ViewModelBase
             _currentSimulationTime = value;
             OnPropertyChanged();
         }
-    }
-
-    public void SetCurrentSimulationTime(double simulationTime)
-    {
-        var workingDays = Math.Floor(simulationTime / 28_800);
-        simulationTime -= workingDays * 28_800;
-        
-        var hours = Math.Floor(simulationTime / 3_600);
-        simulationTime -= hours * 3_600;
-        
-        var minutes = Math.Floor(simulationTime / 60);
-        simulationTime -= minutes * 60;
-        
-        var seconds = Math.Floor(simulationTime);
-        simulationTime -= seconds;
-        
-        hours += 6;
-
-        CurrentSimulationTime = $"[Day {workingDays + 1}] {hours:00}:{minutes:00}:{seconds:00}";
     }
     
     private string _replicationOrderProcessingTime = "-";
@@ -304,7 +287,7 @@ public class MainWindowViewModel : ViewModelBase
         }
     }
     
-    private string _pendingOrdersQueueCount = "-";
+    private string _pendingOrdersQueueCount = "0";
 
     public string PendingOrdersQueueCount
     {
@@ -313,10 +296,13 @@ public class MainWindowViewModel : ViewModelBase
         {
             _pendingOrdersQueueCount = value;
             OnPropertyChanged();
+            OnPropertyChanged(nameof(PendingOrdersQueueTabTitle));
         }
     }
     
-    private string _pendingCutMaterialsQueueCount = "-";
+    public string PendingOrdersQueueTabTitle => $"To Process ({PendingOrdersQueueCount})";
+    
+    private string _pendingCutMaterialsQueueCount = "0";
     
     public string PendingCutMaterialsQueueCount
     {
@@ -325,10 +311,13 @@ public class MainWindowViewModel : ViewModelBase
         {
             _pendingCutMaterialsQueueCount = value;
             OnPropertyChanged();
+            OnPropertyChanged(nameof(PendingCutMaterialsQueueTabTitle));
         }
     }
+    public string PendingCutMaterialsQueueTabTitle => $"Cut Materials ({PendingCutMaterialsQueueCount})";
+
     
-    private string _pendingVarnishedMaterialsQueueCount = "-";
+    private string _pendingVarnishedMaterialsQueueCount = "0";
     
     public string PendingVarnishedMaterialsQueueCount
     {
@@ -337,10 +326,14 @@ public class MainWindowViewModel : ViewModelBase
         {
             _pendingVarnishedMaterialsQueueCount = value;
             OnPropertyChanged();
+            OnPropertyChanged(nameof(PendingVarnishedMaterialsQueueTabTitle));
         }
     }
     
-    private string _pendingFoldedClosetsQueueCount = "-";
+    public string PendingVarnishedMaterialsQueueTabTitle => $"Varnished Materials ({PendingVarnishedMaterialsQueueCount})";
+
+    
+    private string _pendingFoldedClosetsQueueCount = "0";
     
     public string PendingFoldedClosetsQueueCount
     {
@@ -349,8 +342,12 @@ public class MainWindowViewModel : ViewModelBase
         {
             _pendingFoldedClosetsQueueCount = value;
             OnPropertyChanged();
+            OnPropertyChanged(nameof(PendingFoldedClosetsQueueTabTitle));
         }
     }
+    
+    public string PendingFoldedClosetsQueueTabTitle => $"Folded Closets ({PendingFoldedClosetsQueueCount})";
+
 
     private ObservableCollection<OrderDTO> _orders = [];
 
@@ -407,7 +404,51 @@ public class MainWindowViewModel : ViewModelBase
         }
     }
     
-    private string _replicationWorkersGroupAUtilization = "(- %)";
+    private ObservableCollection<OrderDTO> _pendingOrdersQueue = [];
+
+    public ObservableCollection<OrderDTO> PendingOrdersQueue
+    {
+        get => _pendingOrdersQueue;
+        set {
+            _pendingOrdersQueue = value;
+            OnPropertyChanged();
+        }
+    }
+    
+    private ObservableCollection<OrderDTO> _pendingCutMaterialsQueue = [];
+
+    public ObservableCollection<OrderDTO> PendingCutMaterialsQueue
+    {
+        get => _pendingCutMaterialsQueue;
+        set {
+            _pendingCutMaterialsQueue = value;
+            OnPropertyChanged();
+        }
+    }
+    
+    private ObservableCollection<OrderDTO> _pendingVarnishedMaterialsQueue = [];
+
+    public ObservableCollection<OrderDTO> PendingVarnishedMaterialsQueue
+    {
+        get => _pendingVarnishedMaterialsQueue;
+        set {
+            _pendingVarnishedMaterialsQueue = value;
+            OnPropertyChanged();
+        }
+    }
+    
+    private ObservableCollection<OrderDTO> _pendingFoldedClosetsQueue = [];
+
+    public ObservableCollection<OrderDTO> PendingFoldedClosetsQueue
+    {
+        get => _pendingFoldedClosetsQueue;
+        set {
+            _pendingFoldedClosetsQueue = value;
+            OnPropertyChanged();
+        }
+    }
+    
+    private string _replicationWorkersGroupAUtilization = "-";
     
     public string ReplicationWorkersGroupAUtilization
     {
@@ -419,7 +460,7 @@ public class MainWindowViewModel : ViewModelBase
         }
     }
     
-    private string _replicationWorkersGroupBUtilization = "(- %)";
+    private string _replicationWorkersGroupBUtilization = "-";
     
     public string ReplicationWorkersGroupBUtilization
     {
@@ -431,7 +472,7 @@ public class MainWindowViewModel : ViewModelBase
         }
     }
     
-    private string _replicationWorkersGroupCUtilization = "(- %)";
+    private string _replicationWorkersGroupCUtilization = "-";
     
     public string ReplicationWorkersGroupCUtilization
     {
@@ -458,6 +499,34 @@ public class MainWindowViewModel : ViewModelBase
             OnPropertyChanged();
         }
     }
+    
+    private string _selectedTimeUnits = "seconds";
+    
+    public string SelectedTimeUnits
+    {
+        get => _selectedTimeUnits;
+        set
+        {
+            _selectedTimeUnits = value;
+            OnPropertyChanged();
+            OnPropertyChanged(nameof(SimulationCurrentProcessingOrderTime));
+            OnPropertyChanged(nameof(SimulationCurrentProcessingOrderTimeCI));
+        }
+    }
+
+    public string SimulationCurrentProcessingOrderTime
+    {
+        get
+        {
+            return _selectedTimeUnits switch
+            {
+                "seconds" => SimulationCurrentProcessingOrderTimeSeconds,
+                "minutes" => SimulationCurrentProcessingOrderTimeMinutes,
+                "hours" => SimulationCurrentProcessingOrderTimeHours,
+                _ => "-"
+            };
+        }
+    }
 
     private string _simulationCurrentProcessingOrderTimeSeconds = "-";
 
@@ -468,6 +537,7 @@ public class MainWindowViewModel : ViewModelBase
         {
             _simulationCurrentProcessingOrderTimeSeconds = value;
             OnPropertyChanged();
+            OnPropertyChanged(nameof(SimulationCurrentProcessingOrderTime));
         }
     }
     
@@ -480,6 +550,7 @@ public class MainWindowViewModel : ViewModelBase
         {
             _simulationCurrentProcessingOrderTimeMinutes = value;
             OnPropertyChanged();
+            OnPropertyChanged(nameof(SimulationCurrentProcessingOrderTime));
         }
     }
     
@@ -492,6 +563,60 @@ public class MainWindowViewModel : ViewModelBase
         {
             _simulationCurrentProcessingOrderTimeHours = value;
             OnPropertyChanged();
+            OnPropertyChanged(nameof(SimulationCurrentProcessingOrderTime));
+        }
+    }
+    
+    public string SimulationCurrentProcessingOrderTimeCI
+    {
+        get
+        {
+            return _selectedTimeUnits switch
+            {
+                "seconds" => SimulationCurrentProcessingOrderTimeSecondsCI,
+                "minutes" => SimulationCurrentProcessingOrderTimeMinutesCI,
+                "hours" => SimulationCurrentProcessingOrderTimeHoursCI,
+                _ => "-"
+            };
+        }
+    }
+    
+    private string _simulationCurrentProcessingOrderTimeSecondsCI = "-";
+    
+    public string SimulationCurrentProcessingOrderTimeSecondsCI
+    {
+        get => _simulationCurrentProcessingOrderTimeSecondsCI;
+        set
+        {
+            _simulationCurrentProcessingOrderTimeSecondsCI = value;
+            OnPropertyChanged();
+            OnPropertyChanged(nameof(SimulationCurrentProcessingOrderTimeCI));
+        }
+    }
+    
+    private string _simulationCurrentProcessingOrderTimeMinutesCI = "-";
+    
+    public string SimulationCurrentProcessingOrderTimeMinutesCI
+    {
+        get => _simulationCurrentProcessingOrderTimeMinutesCI;
+        set
+        {
+            _simulationCurrentProcessingOrderTimeMinutesCI = value;
+            OnPropertyChanged();
+            OnPropertyChanged(nameof(SimulationCurrentProcessingOrderTimeCI));
+        }
+    }
+    
+    private string _simulationCurrentProcessingOrderTimeHoursCI = "-";
+    
+    public string SimulationCurrentProcessingOrderTimeHoursCI
+    {
+        get => _simulationCurrentProcessingOrderTimeHoursCI;
+        set
+        {
+            _simulationCurrentProcessingOrderTimeHoursCI = value;
+            OnPropertyChanged();
+            OnPropertyChanged(nameof(SimulationCurrentProcessingOrderTimeCI));
         }
     }
     
@@ -503,6 +628,90 @@ public class MainWindowViewModel : ViewModelBase
         set
         {
             _simulationPendingOrders = value;
+            OnPropertyChanged();
+        }
+    }
+    
+    private string _simulationPendingOrdersCI = "-";
+    
+    public string SimulationPendingOrdersCI
+    {
+        get => _simulationPendingOrdersCI;
+        set
+        {
+            _simulationPendingOrdersCI = value;
+            OnPropertyChanged();
+        }
+    }
+    
+    private string _simulationPendingCutMaterials = "-";
+    
+    public string SimulationPendingCutMaterials
+    {
+        get => _simulationPendingCutMaterials;
+        set
+        {
+            _simulationPendingCutMaterials = value;
+            OnPropertyChanged();
+        }
+    }
+    
+    private string _simulationPendingCutMaterialsCI = "-";
+    
+    public string SimulationPendingCutMaterialsCI
+    {
+        get => _simulationPendingCutMaterialsCI;
+        set
+        {
+            _simulationPendingCutMaterialsCI = value;
+            OnPropertyChanged();
+        }
+    }
+    
+    private string _simulationPendingVarnishedMaterials = "-";
+    
+    public string SimulationPendingVarnishedMaterials
+    {
+        get => _simulationPendingVarnishedMaterials;
+        set
+        {
+            _simulationPendingVarnishedMaterials = value;
+            OnPropertyChanged();
+        }
+    }
+    
+    private string _simulationPendingVarnishedMaterialsCI = "-";
+    
+    public string SimulationPendingVarnishedMaterialsCI
+    {
+        get => _simulationPendingVarnishedMaterialsCI;
+        set
+        {
+            _simulationPendingVarnishedMaterialsCI = value;
+            OnPropertyChanged();
+        }
+    }
+    
+    private string _simulationPendingFoldedClosets = "-";
+    
+    public string SimulationPendingFoldedClosets
+    {
+        get => _simulationPendingFoldedClosets;
+        set
+        {
+            _simulationPendingFoldedClosets = value;
+            OnPropertyChanged();
+        }
+    }
+    
+    private string _simulationPendingFoldedClosetsCI = "-";
+    
+    public string SimulationPendingFoldedClosetsCI
+    {
+        get => _simulationPendingFoldedClosetsCI;
+        set
+        {
+            _simulationPendingFoldedClosetsCI = value;
             OnPropertyChanged();
         }
     }
@@ -519,6 +728,18 @@ public class MainWindowViewModel : ViewModelBase
         }
     }
     
+    private string _simulationWorkersAUtilizationCI = "-";
+    
+    public string SimulationWorkersAUtilizationCI
+    {
+        get => _simulationWorkersAUtilizationCI;
+        set
+        {
+            _simulationWorkersAUtilizationCI = value;
+            OnPropertyChanged();
+        }
+    }
+    
     private string _simulationWorkersBUtilization = "-";
     
     public string SimulationWorkersBUtilization
@@ -531,14 +752,38 @@ public class MainWindowViewModel : ViewModelBase
         }
     }
     
+    private string _simulationWorkersBUtilizationCI = "-";
+    
+    public string SimulationWorkersBUtilizationCI
+    {
+        get => _simulationWorkersBUtilizationCI;
+        set
+        {
+            _simulationWorkersBUtilizationCI = value;
+            OnPropertyChanged();
+        }
+    }
+    
     private string _simulationWorkersCUtilization = "-";
     
     public string SimulationWorkersCUtilization
     {
-        get => _simulationWorkersCUtilization;
+        get => _simulationWorkersBUtilization;
         set
         {
-            _simulationWorkersCUtilization = value;
+            _simulationWorkersBUtilization = value;
+            OnPropertyChanged();
+        }
+    }
+    
+    private string _simulationWorkersCUtilizationCI = "-";
+    
+    public string SimulationWorkersCUtilizationCI
+    {
+        get => _simulationWorkersCUtilizationCI;
+        set
+        {
+            _simulationWorkersCUtilizationCI = value;
             OnPropertyChanged();
         }
     }

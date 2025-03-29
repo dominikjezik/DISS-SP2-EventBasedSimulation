@@ -4,7 +4,7 @@ using DiscreteSimulation.FurnitureManufacturer.Utilities;
 
 namespace DiscreteSimulation.FurnitureManufacturer.DTOs;
 
-public class WorkerDTO : INotifyPropertyChanged
+public class WorkerDTO : INotifyPropertyChanged, IUpdatable<WorkerDTO>
 {
     private string _id;
     private string _place;
@@ -132,7 +132,7 @@ public static class WorkerDTOExtensions
         return dto;
     }
     
-    public static WorkerDTO ToUtilizationDTO(this Worker worker, (double, double) utilization)
+    public static WorkerDTO ToUtilizationDTO(this Worker worker, double mean, (double, double) utilization)
     {
         var dto = new WorkerDTO();
         dto.Update(worker);
@@ -150,7 +150,8 @@ public static class WorkerDTOExtensions
             dto.State = "Worker group C";
         }
         
-        dto.Utilization = $"<{(utilization.Item1*100):F2} ; {(utilization.Item2*100):F2}>";
+        dto.Utilization = $"{(mean*100):F2}%";
+        dto.Place = $"<{(utilization.Item1*100):F2} ; {(utilization.Item2*100):F2}>";
         
         return dto;
     }

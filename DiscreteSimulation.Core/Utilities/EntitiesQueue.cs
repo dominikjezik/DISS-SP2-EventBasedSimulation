@@ -10,9 +10,11 @@ public class EntitiesQueue<TEntity>
     private WeightedStatistics _weightedStatistics = new();
     private double _lastChangeInQueueTime = 0;
     
+    public Queue<TEntity> OriginalQueue => _queue;
+    
     public int Count => _queue.Count;
     
-    public double AverageQueueLength => _weightedStatistics.Mean;
+    public double AverageQueueLength => double.IsNaN(_weightedStatistics.Mean) ? 0 : _weightedStatistics.Mean;
     
     public EntitiesQueue(EventSimulationCore eventSimulationCore)
     {

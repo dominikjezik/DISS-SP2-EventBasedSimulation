@@ -4,12 +4,12 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:scottPlot="clr-namespace:ScottPlot.Avalonia;assembly=ScottPlot.Avalonia"
-        mc:Ignorable="d" d:DesignWidth="1300" d:DesignHeight="600"
+        mc:Ignorable="d" d:DesignWidth="1300" d:DesignHeight="700"
         x:Class="DiscreteSimulation.GUI.Views.MainWindow"
         x:DataType="vm:MainWindowViewModel"
         Icon="/Assets/avalonia-logo.ico"
         WindowStartupLocation="CenterScreen"
-        MinWidth="1300" MinHeight="450"
+        MinWidth="1300" MinHeight="700"
         Title="Diskrétna simulácia - SP2 Udalostná simulácia">
 
     <Design.DataContext>
@@ -110,6 +110,7 @@
 
             <TextBox
                 Margin="0,10,10,0" 
+                IsEnabled="{Binding IsStartSimulationButtonEnabled}"
                 Text="{Binding MaxReplicationTime}" 
                 Height="20"
                 Width="120" />
@@ -120,6 +121,7 @@
 
             <TextBox
                 Margin="0,10,10,0" 
+                IsEnabled="{Binding IsStartSimulationButtonEnabled}"
                 Text="{Binding Replications}" 
                 Height="20"
                 Width="120" />
@@ -257,18 +259,32 @@
                 
                 <Label
                     Grid.Row="2" Grid.Column="0"
-                    Margin="0,20,10,5"
-                    FontSize="18"
-                    FontWeight="Bold"
+                    Margin="0,0,0,5"
+                    FontSize="16"
                     FontFamily="Source Code Pro"
-                    Content="Queues" />
+                    Content="Workers group A utilization" />
+                
+                <Label
+                    Grid.Row="2" Grid.Column="1"
+                    Margin="0,0,0,5"
+                    FontSize="16"
+                    FontFamily="Source Code Pro"
+                    HorizontalAlignment="Center"
+                    Content="{Binding ReplicationWorkersGroupAUtilization}" />
+                
+                <Label
+                    Grid.Row="2" Grid.Column="2"
+                    Margin="0,0,10,5"
+                    FontSize="16"
+                    FontFamily="Source Code Pro"
+                    Content="%" />
                 
                 <Label
                     Grid.Row="3" Grid.Column="0"
                     Margin="0,0,0,5"
                     FontSize="16"
                     FontFamily="Source Code Pro"
-                    Content="Orders to start processing" />
+                    Content="Workers group B utilization" />
                 
                 <Label
                     Grid.Row="3" Grid.Column="1"
@@ -276,14 +292,21 @@
                     FontSize="16"
                     FontFamily="Source Code Pro"
                     HorizontalAlignment="Center"
-                    Content="{Binding PendingOrdersQueueCount}" />
+                    Content="{Binding ReplicationWorkersGroupBUtilization}" />
+                
+                <Label
+                    Grid.Row="3" Grid.Column="2"
+                    Margin="0,0,10,5"
+                    FontSize="16"
+                    FontFamily="Source Code Pro"
+                    Content="%" />
                 
                 <Label
                     Grid.Row="4" Grid.Column="0"
                     Margin="0,0,0,5"
                     FontSize="16"
                     FontFamily="Source Code Pro"
-                    Content="Pending cut material" />
+                    Content="Workers group C utilization" />
                 
                 <Label
                     Grid.Row="4" Grid.Column="1"
@@ -291,47 +314,26 @@
                     FontSize="16"
                     FontFamily="Source Code Pro"
                     HorizontalAlignment="Center"
-                    Content="{Binding PendingCutMaterialsQueueCount}" />
+                    Content="{Binding ReplicationWorkersGroupCUtilization}" />
+                
+                <Label
+                    Grid.Row="4" Grid.Column="2"
+                    Margin="0,0,10,5"
+                    FontSize="16"
+                    FontFamily="Source Code Pro"
+                    Content="%" />
                 
                 <Label
                     Grid.Row="5" Grid.Column="0"
-                    Margin="0,0,0,5"
-                    FontSize="16"
-                    FontFamily="Source Code Pro"
-                    Content="Pending varnished material" />
-                
-                <Label
-                    Grid.Row="5" Grid.Column="1"
-                    Margin="0,0,0,5"
-                    FontSize="16"
-                    FontFamily="Source Code Pro"
-                    HorizontalAlignment="Center"
-                    Content="{Binding PendingVarnishedMaterialsQueueCount}" />
-                
-                <Label
-                    Grid.Row="6" Grid.Column="0"
-                    Margin="0,0,0,5"
-                    FontSize="16"
-                    FontFamily="Source Code Pro"
-                    Content="Pending folded closet" />
-                
-                <Label
-                    Grid.Row="6" Grid.Column="1"
-                    Margin="0,0,0,5"
-                    FontSize="16"
-                    FontFamily="Source Code Pro"
-                    HorizontalAlignment="Center"
-                    Content="{Binding PendingFoldedClosetsQueueCount}" />
-                
-                <Label
-                    Grid.Row="7" Grid.Column="0"
-                    Margin="0,20,10,5"
+                    Margin="0,10,10,5"
                     FontSize="18"
                     FontWeight="Bold"
                     FontFamily="Source Code Pro"
                     Content="Parameters" />
                 
-                <StackPanel Grid.Row="8" Grid.Column="0" Grid.ColumnSpan="3" Orientation="Horizontal" Margin="0,0,0,10" HorizontalAlignment="Left">
+                <StackPanel 
+                    Grid.Row="6" Grid.Column="0" Grid.ColumnSpan="3" 
+                    Orientation="Horizontal" HorizontalAlignment="Left">
                     <Label 
                         VerticalAlignment="Center"
                         Margin="0,0,10,0" >Sleep time</Label>
@@ -339,6 +341,7 @@
                     <TextBox
                         Margin="0,0,10,0" 
                         Text="{Binding SleepTime}" 
+                        IsEnabled="{Binding IsStartSimulationButtonEnabled}"
                         Height="20"
                         Width="120" />
             
@@ -354,147 +357,248 @@
                         Width="120" />
                 </StackPanel>
                 
+                <Label
+                    Grid.Row="7" Grid.Column="0"
+                    Margin="0,10,10,5"
+                    FontSize="18"
+                    FontWeight="Bold"
+                    FontFamily="Source Code Pro"
+                    Content="Workers count" />
+                
+                <StackPanel 
+                    Grid.Row="8" Grid.Column="0" Grid.ColumnSpan="3" 
+                    Orientation="Horizontal" HorizontalAlignment="Left">
+                    <Label Margin="0,5,0,0">A</Label>
+                    <TextBox
+                        Margin="10,0,0,0"
+                        IsEnabled="{Binding IsStartSimulationButtonEnabled}"
+                        Text="{Binding CountOfWorkersGroupA}"
+                        Height="20"
+                        Width="40" />
+                    
+                    <Label Margin="10,5,0,0">B</Label>
+                    <TextBox
+                        Margin="10,0,0,0"
+                        IsEnabled="{Binding IsStartSimulationButtonEnabled}"
+                        Text="{Binding CountOfWorkersGroupB}"
+                        Height="20"
+                        Width="40" />
+                    
+                    <Label Margin="10,5,0,0">C</Label>
+                    <TextBox
+                        Margin="10,0,0,0"
+                        IsEnabled="{Binding IsStartSimulationButtonEnabled}"
+                        Text="{Binding CountOfWorkersGroupC}"
+                        Height="20"
+                        Width="40" />
+                </StackPanel>
+                
             </Grid>
             
             <Grid
                 Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="3"
-                RowDefinitions="Auto,*,Auto,*" ColumnDefinitions="*,*">
+                RowDefinitions="*" ColumnDefinitions="*,*"
+                Margin="0,10,0,10">
                 
-                <StackPanel
-                    Grid.Row="0" Grid.Column="0"
-                    Orientation="Horizontal"
-                    Margin="10,15,0,5">
-                    <Label
-                        FontSize="18"
-                        FontWeight="Bold"
-                        FontFamily="Source Code Pro"
-                        Content="Workers group A" />
-                    <Label
-                        FontSize="18"
-                        FontFamily="Source Code Pro"
-                        Content="{Binding ReplicationWorkersGroupAUtilization}" />
-                </StackPanel>
-                <DataGrid Grid.Row="1" Grid.Column="0"
-                          Margin="10,0,5,10" 
-                          ItemsSource="{Binding WorkersGroupA}"
-                          SelectionMode="Single"
-                          CanUserSortColumns="False"
-                          IsReadOnly="True"
-                          GridLinesVisibility="All"
-                          RowHeight="24"
-                          BorderThickness="1" BorderBrush="Gray">
+                <TabControl Grid.Row="0" Grid.Column="0">
+                    <TabItem Header="Workers group A" FontSize="16">
+                        <DataGrid
+                              ItemsSource="{Binding WorkersGroupA}"
+                              SelectionMode="Single"
+                              CanUserSortColumns="False"
+                              IsReadOnly="True"
+                              GridLinesVisibility="All"
+                              RowHeight="24"
+                              BorderThickness="1" BorderBrush="Gray">
                 
-                    <DataGrid.Styles>
-                        <Style Selector="DataGridColumnHeader">
-                            <Setter Property="FontWeight" Value="Bold"/>
-                        </Style>
-                        <Style Selector="DataGridCell:current /template/ Grid#FocusVisual"> 
-                            <Setter Property="IsVisible" Value="false" /> 
-                        </Style> 
-                    </DataGrid.Styles>
+                            <DataGrid.Styles>
+                                <Style Selector="DataGridColumnHeader">
+                                    <Setter Property="FontWeight" Value="Bold"/>
+                                </Style>
+                                <Style Selector="DataGridCell:current /template/ Grid#FocusVisual"> 
+                                    <Setter Property="IsVisible" Value="false" /> 
+                                </Style> 
+                            </DataGrid.Styles>
                 
-                    <DataGrid.Columns>
-                        <DataGridTextColumn Header="ID" Width="Auto" Binding="{Binding Id}" />
-                        <DataGridTextColumn Header="Place" Width="Auto" Binding="{Binding Place}" />
-                        <DataGridTextColumn Header="State" Width="*" Binding="{Binding State}" />
-                        <DataGridTextColumn Header="Order" Width="Auto" Binding="{Binding Order}" />
-                        <DataGridTextColumn Header="Utilization" Width="Auto" Binding="{Binding Utilization}" />
-                    </DataGrid.Columns>
-                </DataGrid>
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="ID" Width="Auto" Binding="{Binding Id}" />
+                                <DataGridTextColumn Header="Place" Width="Auto" Binding="{Binding Place}" />
+                                <DataGridTextColumn Header="State" Width="*" Binding="{Binding State}" />
+                                <DataGridTextColumn Header="Order" Width="Auto" Binding="{Binding Order}" />
+                                <DataGridTextColumn Header="Utilization" Width="Auto" Binding="{Binding Utilization}" />
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </TabItem>
+                    <TabItem Header="Workers group B" FontSize="16">
+                        <DataGrid 
+                              ItemsSource="{Binding WorkersGroupB}"
+                              SelectionMode="Single"
+                              CanUserSortColumns="False"
+                              IsReadOnly="True"
+                              GridLinesVisibility="All"
+                              RowHeight="24"
+                              BorderThickness="1" BorderBrush="Gray">
                 
-                <StackPanel
-                    Grid.Row="2" Grid.Column="0"
-                    Orientation="Horizontal"
-                    
-                    Margin="10,5,0,5">
-                    <Label
-                        FontSize="18"
-                        FontWeight="Bold"
-                        FontFamily="Source Code Pro"
-                        Content="Workers group B" />
-                    <Label
-                        FontSize="18"
-                        FontFamily="Source Code Pro"
-                        Content="{Binding ReplicationWorkersGroupBUtilization}" />
-                </StackPanel>
-                <DataGrid Grid.Row="3" Grid.Column="0"
-                          Margin="10,0,5,10" 
-                          ItemsSource="{Binding WorkersGroupB}"
-                          SelectionMode="Single"
-                          CanUserSortColumns="False"
-                          IsReadOnly="True"
-                          GridLinesVisibility="All"
-                          RowHeight="24"
-                          BorderThickness="1" BorderBrush="Gray">
+                            <DataGrid.Styles>
+                                <Style Selector="DataGridColumnHeader">
+                                    <Setter Property="FontWeight" Value="Bold"/>
+                                </Style>
+                                <Style Selector="DataGridCell:current /template/ Grid#FocusVisual"> 
+                                    <Setter Property="IsVisible" Value="false" /> 
+                                </Style> 
+                            </DataGrid.Styles>
                 
-                    <DataGrid.Styles>
-                        <Style Selector="DataGridColumnHeader">
-                            <Setter Property="FontWeight" Value="Bold"/>
-                        </Style>
-                        <Style Selector="DataGridCell:current /template/ Grid#FocusVisual"> 
-                            <Setter Property="IsVisible" Value="false" /> 
-                        </Style> 
-                    </DataGrid.Styles>
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="ID" Width="Auto" Binding="{Binding Id}" />
+                                <DataGridTextColumn Header="Place" Width="Auto" Binding="{Binding Place}" />
+                                <DataGridTextColumn Header="State" Width="*" Binding="{Binding State}" />
+                                <DataGridTextColumn Header="Order" Width="Auto" Binding="{Binding Order}" />
+                                <DataGridTextColumn Header="Utilization" Width="Auto" Binding="{Binding Utilization}" />
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </TabItem>
+                    <TabItem Header="Workers group C" FontSize="16">
+                        <DataGrid
+                              ItemsSource="{Binding WorkersGroupC}"
+                              SelectionMode="Single"
+                              CanUserSortColumns="False"
+                              IsReadOnly="True"
+                              GridLinesVisibility="All"
+                              RowHeight="24"
+                              BorderThickness="1" BorderBrush="Gray">
                 
-                    <DataGrid.Columns>
-                        <DataGridTextColumn Header="ID" Width="Auto" Binding="{Binding Id}" />
-                        <DataGridTextColumn Header="Place" Width="Auto" Binding="{Binding Place}" />
-                        <DataGridTextColumn Header="State" Width="*" Binding="{Binding State}" />
-                        <DataGridTextColumn Header="Order" Width="Auto" Binding="{Binding Order}" />
-                        <DataGridTextColumn Header="Utilization" Width="Auto" Binding="{Binding Utilization}" />
-                    </DataGrid.Columns>
-                </DataGrid>
+                            <DataGrid.Styles>
+                                <Style Selector="DataGridColumnHeader">
+                                    <Setter Property="FontWeight" Value="Bold"/>
+                                </Style>
+                                <Style Selector="DataGridCell:current /template/ Grid#FocusVisual"> 
+                                    <Setter Property="IsVisible" Value="false" /> 
+                                </Style> 
+                            </DataGrid.Styles>
                 
-                <StackPanel
-                    Grid.Row="0" Grid.Column="1"
-                    Orientation="Horizontal"
-                    Margin="5,15,0,5">
-                    <Label
-                        FontSize="18"
-                        FontWeight="Bold"
-                        FontFamily="Source Code Pro"
-                        Content="Workers group C" />
-                    <Label
-                        FontSize="18"
-                        FontFamily="Source Code Pro"
-                        Content="{Binding ReplicationWorkersGroupCUtilization}" />
-                </StackPanel>
-                <DataGrid Grid.Row="1" Grid.Column="1"
-                          Grid.RowSpan="3"
-                          Margin="5,0,10,10" 
-                          ItemsSource="{Binding WorkersGroupC}"
-                          SelectionMode="Single"
-                          CanUserSortColumns="False"
-                          IsReadOnly="True"
-                          GridLinesVisibility="All"
-                          RowHeight="24"
-                          BorderThickness="1" BorderBrush="Gray">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="ID" Width="Auto" Binding="{Binding Id}" />
+                                <DataGridTextColumn Header="Place" Width="Auto" Binding="{Binding Place}" />
+                                <DataGridTextColumn Header="State" Width="*" Binding="{Binding State}" />
+                                <DataGridTextColumn Header="Order" Width="Auto" Binding="{Binding Order}" />
+                                <DataGridTextColumn Header="Utilization" Width="Auto" Binding="{Binding Utilization}" />
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </TabItem>
+                </TabControl>
                 
-                    <DataGrid.Styles>
-                        <Style Selector="DataGridColumnHeader">
-                            <Setter Property="FontWeight" Value="Bold"/>
-                        </Style>
-                        <Style Selector="DataGridCell:current /template/ Grid#FocusVisual"> 
-                            <Setter Property="IsVisible" Value="false" /> 
-                        </Style> 
-                    </DataGrid.Styles>
+                <TabControl Grid.Row="0" Grid.Column="1">
+                    <TabItem Header="{Binding PendingOrdersQueueTabTitle}" FontSize="16">
+                        <DataGrid
+                              ItemsSource="{Binding PendingOrdersQueue}"
+                              SelectionMode="Single"
+                              CanUserSortColumns="False"
+                              IsReadOnly="True" 
+                              GridLinesVisibility="All"
+                              RowHeight="24"
+                              BorderThickness="1" BorderBrush="Gray">
                 
-                    <DataGrid.Columns>
-                        <DataGridTextColumn Header="ID" Width="Auto" Binding="{Binding Id}" />
-                        <DataGridTextColumn Header="Place" Width="Auto" Binding="{Binding Place}" />
-                        <DataGridTextColumn Header="State" Width="*" Binding="{Binding State}" />
-                        <DataGridTextColumn Header="Order" Width="Auto" Binding="{Binding Order}" />
-                        <DataGridTextColumn Header="Utilization" Width="Auto" Binding="{Binding Utilization}" />
-                    </DataGrid.Columns>
-                </DataGrid>
+                            <DataGrid.Styles>
+                                <Style Selector="DataGridColumnHeader">
+                                    <Setter Property="FontWeight" Value="Bold"/>
+                                </Style>
+                                <Style Selector="DataGridCell:current /template/ Grid#FocusVisual"> 
+                                    <Setter Property="IsVisible" Value="false" /> 
+                                </Style> 
+                            </DataGrid.Styles>
+                
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="#" Width="Auto" Binding="{Binding Id}" />
+                                <DataGridTextColumn Header="Type" Width="Auto" Binding="{Binding Type}" />
+                                <DataGridTextColumn Header="State" Width="*" Binding="{Binding State}" />
+                                <DataGridTextColumn Header="Arrival" Width="Auto" Binding="{Binding ArrivalTime}" />
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </TabItem>
+                    <TabItem Header="{Binding PendingCutMaterialsQueueTabTitle}" FontSize="16">
+                        <DataGrid
+                            ItemsSource="{Binding PendingCutMaterialsQueue}"
+                            SelectionMode="Single"
+                            CanUserSortColumns="False"
+                            IsReadOnly="True" 
+                            GridLinesVisibility="All"
+                            RowHeight="24"
+                            BorderThickness="1" BorderBrush="Gray">
+                
+                            <DataGrid.Styles>
+                                <Style Selector="DataGridColumnHeader">
+                                    <Setter Property="FontWeight" Value="Bold"/>
+                                </Style>
+                                <Style Selector="DataGridCell:current /template/ Grid#FocusVisual"> 
+                                    <Setter Property="IsVisible" Value="false" /> 
+                                </Style> 
+                            </DataGrid.Styles>
+                
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="#" Width="Auto" Binding="{Binding Id}" />
+                                <DataGridTextColumn Header="Type" Width="Auto" Binding="{Binding Type}" />
+                                <DataGridTextColumn Header="State" Width="*" Binding="{Binding State}" />
+                                <DataGridTextColumn Header="Arrival" Width="Auto" Binding="{Binding ArrivalTime}" />
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </TabItem>
+                    <TabItem Header="{Binding PendingVarnishedMaterialsQueueTabTitle}" FontSize="16">
+                        <DataGrid
+                            ItemsSource="{Binding PendingVarnishedMaterialsQueue}"
+                            SelectionMode="Single"
+                            CanUserSortColumns="False"
+                            IsReadOnly="True" 
+                            GridLinesVisibility="All"
+                            RowHeight="24"
+                            BorderThickness="1" BorderBrush="Gray">
+                
+                            <DataGrid.Styles>
+                                <Style Selector="DataGridColumnHeader">
+                                    <Setter Property="FontWeight" Value="Bold"/>
+                                </Style>
+                                <Style Selector="DataGridCell:current /template/ Grid#FocusVisual"> 
+                                    <Setter Property="IsVisible" Value="false" /> 
+                                </Style> 
+                            </DataGrid.Styles>
+                
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="#" Width="Auto" Binding="{Binding Id}" />
+                                <DataGridTextColumn Header="Type" Width="Auto" Binding="{Binding Type}" />
+                                <DataGridTextColumn Header="State" Width="*" Binding="{Binding State}" />
+                                <DataGridTextColumn Header="Arrival" Width="Auto" Binding="{Binding ArrivalTime}" />
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </TabItem>
+                    <TabItem Header="{Binding PendingFoldedClosetsQueueTabTitle}" FontSize="16">
+                        <DataGrid
+                            ItemsSource="{Binding PendingFoldedClosetsQueue}"
+                            SelectionMode="Single"
+                            CanUserSortColumns="False"
+                            IsReadOnly="True" 
+                            GridLinesVisibility="All"
+                            RowHeight="24"
+                            BorderThickness="1" BorderBrush="Gray">
+                
+                            <DataGrid.Styles>
+                                <Style Selector="DataGridColumnHeader">
+                                    <Setter Property="FontWeight" Value="Bold"/>
+                                </Style>
+                                <Style Selector="DataGridCell:current /template/ Grid#FocusVisual"> 
+                                    <Setter Property="IsVisible" Value="false" /> 
+                                </Style> 
+                            </DataGrid.Styles>
+                
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="#" Width="Auto" Binding="{Binding Id}" />
+                                <DataGridTextColumn Header="Type" Width="Auto" Binding="{Binding Type}" />
+                                <DataGridTextColumn Header="State" Width="*" Binding="{Binding State}" />
+                                <DataGridTextColumn Header="Arrival" Width="Auto" Binding="{Binding ArrivalTime}" />
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </TabItem>
+                </TabControl>
                 
             </Grid>
-            
-            
-            
-            
-            
-            
             
         </Grid>
         
@@ -507,6 +611,7 @@
                 <TextBox
                     Grid.Row="0" Grid.Column="1"
                     Margin="10,5,0,0"
+                    IsEnabled="{Binding IsStartSimulationButtonEnabled}"
                     Text="{Binding SkipFirstNReplicationsInPercent}"
                     Height="20"
                     Width="120" />
@@ -524,6 +629,7 @@
                 <TextBox
                     Grid.Row="0" Grid.Column="5"
                     Margin="10,5,0,0"
+                    IsEnabled="{Binding IsStartSimulationButtonEnabled}"
                     Text="{Binding RenderPoints}"
                     Height="20"
                     Width="120"/>
@@ -532,6 +638,7 @@
                 <TextBox
                     Grid.Row="1" Grid.Column="1"
                     Margin="10,5,0,0"
+                    IsEnabled="{Binding IsStartSimulationButtonEnabled}"
                     Text="{Binding CountOfWorkersGroupA}"
                     Height="20"
                     Width="120" />
@@ -540,6 +647,7 @@
                 <TextBox
                     Grid.Row="1" Grid.Column="3"
                     Margin="10,5,0,0"
+                    IsEnabled="{Binding IsStartSimulationButtonEnabled}"
                     Text="{Binding CountOfWorkersGroupB}"
                     Height="20"
                     Width="120" />
@@ -548,189 +656,300 @@
                 <TextBox
                     Grid.Row="1" Grid.Column="5"
                     Margin="10,5,0,0"
+                    IsEnabled="{Binding IsStartSimulationButtonEnabled}"
                     Text="{Binding CountOfWorkersGroupC}"
                     Height="20"
                     Width="120" />
                 
-                <Label
-                    Grid.Row="0" Grid.Column="9"
-                    Margin="20,12,10,0"
-                    FontSize="18"
-                    FontWeight="Bold"
-                    FontFamily="Source Code Pro"
-                    VerticalAlignment="Center"
-                    Content="Statistics" />
-        
                 <Grid
-                    Grid.Row="1" Grid.Column="9" Grid.RowSpan="3"
-                    RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,*" ColumnDefinitions="Auto,*,Auto"
-                    Width="450"
-                    Margin="20,20,0,0">
+                    Grid.Row="0" Grid.Column="9" Grid.RowSpan="4"
+                    RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,*" ColumnDefinitions="Auto,*,Auto,*,Auto,*,Auto"
+                    Width="520"
+                    Margin="5,0,0,0">
                     
                     <Label
                         Grid.Row="0" Grid.Column="0"
-                        Margin="0,0,0,5"
-                        FontSize="16"
+                        Margin="0,0,0,10"
+                        FontSize="18"
+                        FontWeight="Bold"
                         FontFamily="Source Code Pro"
-                        Content="Replications" />
-            
-                    <Label
-                        Grid.Row="0" Grid.Column="1"
-                        Margin="0,0,0,5"
-                        FontSize="16"
-                        FontFamily="Source Code Pro"
-                        HorizontalAlignment="Center"
-                        Content="{Binding CurrentReplication}" />
-            
-                    <Label
+                        VerticalAlignment="Center"
+                        Content="Statistics" />
+                    
+                    <SelectableTextBlock
                         Grid.Row="1" Grid.Column="0"
                         Margin="0,0,0,5"
                         FontSize="16"
                         FontFamily="Source Code Pro"
-                        Content="Order processing time" />
+                        Text="Replications" />
             
-                    <Label
-                        Grid.Row="1" Grid.Column="1"
-                        Margin="0,0,0,5"
-                        FontSize="16"
-                        FontFamily="Source Code Pro"
-                        HorizontalAlignment="Center"
-                        Content="{Binding SimulationCurrentProcessingOrderTimeSeconds}" />
-                    
-                    <Label
+                    <SelectableTextBlock
                         Grid.Row="1" Grid.Column="2"
-                        Margin="0,0,10,5"
-                        FontSize="16"
-                        FontFamily="Source Code Pro"
-                        Content="seconds" />
-                    
-                    <Label
-                        Grid.Row="2" Grid.Column="1"
                         Margin="0,0,0,5"
                         FontSize="16"
                         FontFamily="Source Code Pro"
                         HorizontalAlignment="Center"
-                        Content="{Binding SimulationCurrentProcessingOrderTimeMinutes}" />
-                    
-                    <Label
-                        Grid.Row="2" Grid.Column="2"
-                        Margin="0,0,10,5"
-                        FontSize="16"
-                        FontFamily="Source Code Pro"
-                        Content="minutes" />
-                    
-                    <Label
-                        Grid.Row="3" Grid.Column="1"
-                        Margin="0,0,0,5"
-                        FontSize="16"
-                        FontFamily="Source Code Pro"
-                        HorizontalAlignment="Center"
-                        Content="{Binding SimulationCurrentProcessingOrderTimeHours}" />
-                    
-                    <Label
-                        Grid.Row="3" Grid.Column="2"
-                        Margin="0,0,10,5"
-                        FontSize="16"
-                        FontFamily="Source Code Pro"
-                        Content="hours" />
+                        Text="{Binding CurrentReplication}" />
             
-                    <Label
+                    <SelectableTextBlock
+                        Grid.Row="2" Grid.Column="0"
+                        Margin="0,0,0,5"
+                        FontSize="16"
+                        FontFamily="Source Code Pro"
+                        Text="Order processing time" />
+            
+                    <SelectableTextBlock
+                        Grid.Row="2" Grid.Column="2"
+                        Margin="0,0,0,5"
+                        FontSize="16"
+                        FontFamily="Source Code Pro"
+                        HorizontalAlignment="Center"
+                        Text="{Binding SimulationCurrentProcessingOrderTime}" />
+                    
+                    <SelectableTextBlock
+                        Grid.Row="2" Grid.Column="4"
+                        Margin="0,0,0,5"
+                        FontSize="16"
+                        FontFamily="Source Code Pro"
+                        HorizontalAlignment="Center"
+                        Text="{Binding SimulationCurrentProcessingOrderTimeCI}" />
+                    
+                    <SelectableTextBlock
+                        Grid.Row="2" Grid.Column="6"
+                        Margin="0,0,10,5"
+                        FontSize="16"
+                        FontFamily="Source Code Pro"
+                        Text="{Binding SelectedTimeUnits}" >
+                        
+                        <SelectableTextBlock.ContextMenu>
+                            <ContextMenu >
+                                <MenuItem Header="seconds" Click="MenuItem_OnClick" />
+                                <MenuItem Header="minutes" Click="MenuItem_OnClick" />
+                                <MenuItem Header="hours" Click="MenuItem_OnClick" />
+                            </ContextMenu>
+                        </SelectableTextBlock.ContextMenu>
+                        
+                    </SelectableTextBlock>
+                   
+                    <SelectableTextBlock
+                        Grid.Row="3" Grid.Column="0"
+                        Margin="0,0,0,5"
+                        FontSize="16"
+                        FontFamily="Source Code Pro"
+                        Text="Pending orders" />
+            
+                    <SelectableTextBlock
+                        Grid.Row="3" Grid.Column="2"
+                        Margin="0,0,0,5"
+                        FontSize="16"
+                        FontFamily="Source Code Pro"
+                        HorizontalAlignment="Center"
+                        Text="{Binding SimulationPendingOrders}" />
+                    
+                    <SelectableTextBlock
+                        Grid.Row="3" Grid.Column="4"
+                        Margin="0,0,0,5"
+                        FontSize="16"
+                        FontFamily="Source Code Pro"
+                        HorizontalAlignment="Center"
+                        Text="{Binding SimulationPendingOrdersCI}" />
+                    
+                    <SelectableTextBlock
+                        Grid.Row="3" Grid.Column="6"
+                        Margin="0,0,10,5"
+                        FontSize="16"
+                        FontFamily="Source Code Pro"
+                        Text="orders" />
+                    
+                    <SelectableTextBlock
                         Grid.Row="4" Grid.Column="0"
                         Margin="0,0,0,5"
                         FontSize="16"
                         FontFamily="Source Code Pro"
-                        Content="Pending orders" />
+                        Text="Pending cut materials" />
             
-                    <Label
-                        Grid.Row="4" Grid.Column="1"
+                    <SelectableTextBlock
+                        Grid.Row="4" Grid.Column="2"
                         Margin="0,0,0,5"
                         FontSize="16"
                         FontFamily="Source Code Pro"
                         HorizontalAlignment="Center"
-                        Content="{Binding SimulationPendingOrders}" />
+                        Text="{Binding SimulationPendingCutMaterials}" />
                     
-                    <Label
-                        Grid.Row="4" Grid.Column="2"
+                    <SelectableTextBlock
+                        Grid.Row="4" Grid.Column="4"
+                        Margin="0,0,0,5"
+                        FontSize="16"
+                        FontFamily="Source Code Pro"
+                        HorizontalAlignment="Center"
+                        Text="{Binding SimulationPendingCutMaterialsCI}" />
+                    
+                    <SelectableTextBlock
+                        Grid.Row="4" Grid.Column="6"
                         Margin="0,0,10,5"
                         FontSize="16"
                         FontFamily="Source Code Pro"
-                        Content="orders" />
+                        Text="orders" />
                     
-                    <Label
+                    <SelectableTextBlock
                         Grid.Row="5" Grid.Column="0"
                         Margin="0,0,0,5"
                         FontSize="16"
                         FontFamily="Source Code Pro"
-                        Content="Workers A utilization" />
-                    
-                    <Label
-                        Grid.Row="5" Grid.Column="1"
+                        Text="Pending varnished materials" />
+            
+                    <SelectableTextBlock
+                        Grid.Row="5" Grid.Column="2"
                         Margin="0,0,0,5"
                         FontSize="16"
                         FontFamily="Source Code Pro"
                         HorizontalAlignment="Center"
-                        Content="{Binding SimulationWorkersAUtilization}" />
+                        Text="{Binding SimulationPendingVarnishedMaterials}" />
                     
-                    <Label
-                        Grid.Row="5" Grid.Column="2"
+                    <SelectableTextBlock
+                        Grid.Row="5" Grid.Column="4"
+                        Margin="0,0,0,5"
+                        FontSize="16"
+                        FontFamily="Source Code Pro"
+                        HorizontalAlignment="Center"
+                        Text="{Binding SimulationPendingVarnishedMaterialsCI}" />
+                    
+                    <SelectableTextBlock
+                        Grid.Row="5" Grid.Column="6"
                         Margin="0,0,10,5"
                         FontSize="16"
                         FontFamily="Source Code Pro"
-                        Content="%" />
+                        Text="orders" />
                     
-                    <Label
+                    <SelectableTextBlock
                         Grid.Row="6" Grid.Column="0"
                         Margin="0,0,0,5"
                         FontSize="16"
                         FontFamily="Source Code Pro"
-                        Content="Workers B utilization" />
-                    
-                    <Label
-                        Grid.Row="6" Grid.Column="1"
+                        Text="Pending folded closets" />
+            
+                    <SelectableTextBlock
+                        Grid.Row="6" Grid.Column="2"
                         Margin="0,0,0,5"
                         FontSize="16"
                         FontFamily="Source Code Pro"
                         HorizontalAlignment="Center"
-                        Content="{Binding SimulationWorkersBUtilization}" />
+                        Text="{Binding SimulationPendingFoldedClosets}" />
                     
-                    <Label
-                        Grid.Row="6" Grid.Column="2"
+                    <SelectableTextBlock
+                        Grid.Row="6" Grid.Column="4"
+                        Margin="0,0,0,5"
+                        FontSize="16"
+                        FontFamily="Source Code Pro"
+                        HorizontalAlignment="Center"
+                        Text="{Binding SimulationPendingFoldedClosetsCI}" />
+                    
+                    <SelectableTextBlock
+                        Grid.Row="6" Grid.Column="6"
                         Margin="0,0,10,5"
                         FontSize="16"
                         FontFamily="Source Code Pro"
-                        Content="%" />
+                        Text="orders" />
                     
-                    <Label
+                    <SelectableTextBlock
                         Grid.Row="7" Grid.Column="0"
                         Margin="0,0,0,5"
                         FontSize="16"
                         FontFamily="Source Code Pro"
-                        Content="Workers C utilization" />
+                        Text="Workers A utilization" />
                     
-                    <Label
-                        Grid.Row="7" Grid.Column="1"
+                    <SelectableTextBlock
+                        Grid.Row="7" Grid.Column="2"
                         Margin="0,0,0,5"
                         FontSize="16"
                         FontFamily="Source Code Pro"
                         HorizontalAlignment="Center"
-                        Content="{Binding SimulationWorkersCUtilization}" />
+                        Text="{Binding SimulationWorkersAUtilization}" />
                     
-                    <Label
-                        Grid.Row="7" Grid.Column="2"
+                    <SelectableTextBlock
+                        Grid.Row="7" Grid.Column="4"
+                        Margin="0,0,0,5"
+                        FontSize="16"
+                        FontFamily="Source Code Pro"
+                        HorizontalAlignment="Center"
+                        Text="{Binding SimulationWorkersAUtilizationCI}" />
+                    
+                    <SelectableTextBlock
+                        Grid.Row="7" Grid.Column="6"
                         Margin="0,0,10,5"
                         FontSize="16"
                         FontFamily="Source Code Pro"
-                        Content="%" />
+                        Text="%" />
+                    
+                    <SelectableTextBlock
+                        Grid.Row="8" Grid.Column="0"
+                        Margin="0,0,0,5"
+                        FontSize="16"
+                        FontFamily="Source Code Pro"
+                        Text="Workers B utilization" />
+                    
+                    <SelectableTextBlock
+                        Grid.Row="8" Grid.Column="2"
+                        Margin="0,0,0,5"
+                        FontSize="16"
+                        FontFamily="Source Code Pro"
+                        HorizontalAlignment="Center"
+                        Text="{Binding SimulationWorkersBUtilization}" />
+                    
+                    <SelectableTextBlock
+                        Grid.Row="8" Grid.Column="4"
+                        Margin="0,0,0,5"
+                        FontSize="16"
+                        FontFamily="Source Code Pro"
+                        HorizontalAlignment="Center"
+                        Text="{Binding SimulationWorkersBUtilizationCI}" />
+                    
+                    <SelectableTextBlock
+                        Grid.Row="8" Grid.Column="6"
+                        Margin="0,0,10,5"
+                        FontSize="16"
+                        FontFamily="Source Code Pro"
+                        Text="%" />
+                    
+                    <SelectableTextBlock
+                        Grid.Row="9" Grid.Column="0"
+                        Margin="0,0,0,5"
+                        FontSize="16"
+                        FontFamily="Source Code Pro"
+                        Text="Workers C utilization" />
+                    
+                    <SelectableTextBlock
+                        Grid.Row="9" Grid.Column="2"
+                        Margin="0,0,0,5"
+                        FontSize="16"
+                        FontFamily="Source Code Pro"
+                        HorizontalAlignment="Center"
+                        Text="{Binding SimulationWorkersCUtilization}" />
+                    
+                    <SelectableTextBlock
+                        Grid.Row="9" Grid.Column="4"
+                        Margin="0,0,0,5"
+                        FontSize="16"
+                        FontFamily="Source Code Pro"
+                        HorizontalAlignment="Center"
+                        Text="{Binding SimulationWorkersCUtilizationCI}" />
+                    
+                    <SelectableTextBlock
+                        Grid.Row="9" Grid.Column="6"
+                        Margin="0,0,10,5"
+                        FontSize="16"
+                        FontFamily="Source Code Pro"
+                        Text="%" />
                     
                     <Label
-                        Grid.Row="8" Grid.Column="0" Grid.ColumnSpan="3"
-                        Margin="0,15,0,5"
+                        Grid.Row="10" Grid.Column="0" Grid.ColumnSpan="3"
+                        Margin="0,10,0,5"
                         FontSize="18"
                         FontFamily="Source Code Pro"
                         Content="Individual workers utilization" />
                     
-                    <DataGrid Grid.Row="9" Grid.Column="0" Grid.ColumnSpan="3"
-                              Margin="0,0,10,55" 
+                    <DataGrid Grid.Row="11" Grid.Column="0" Grid.ColumnSpan="7"
+                              Margin="0,0,10,66" 
                               ItemsSource="{Binding SimulationAllWorkersUtilization}"
                               SelectionMode="Single"
                               CanUserSortColumns="False"
@@ -751,7 +970,8 @@
                         <DataGrid.Columns>
                             <DataGridTextColumn Header="ID" Width="Auto" Binding="{Binding Id}" />
                             <DataGridTextColumn Header="Group" Width="Auto" Binding="{Binding State}" />
-                            <DataGridTextColumn Header="Utilization" Width="*" Binding="{Binding Utilization}" />
+                            <DataGridTextColumn Header="Utilization" Width="Auto" Binding="{Binding Utilization}" />
+                            <DataGridTextColumn Header="Utilization 95% CI" Width="*" Binding="{Binding Place}" />
                         </DataGrid.Columns>
                     </DataGrid>
             

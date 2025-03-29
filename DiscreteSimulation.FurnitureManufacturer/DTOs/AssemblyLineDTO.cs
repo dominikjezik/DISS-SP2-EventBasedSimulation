@@ -3,7 +3,7 @@ using DiscreteSimulation.FurnitureManufacturer.Entities;
 
 namespace DiscreteSimulation.FurnitureManufacturer.DTOs;
 
-public class AssemblyLineDTO : INotifyPropertyChanged
+public class AssemblyLineDTO : INotifyPropertyChanged, IUpdatable<AssemblyLineDTO>
 {
     private int _id;
     private string _currentOrder;
