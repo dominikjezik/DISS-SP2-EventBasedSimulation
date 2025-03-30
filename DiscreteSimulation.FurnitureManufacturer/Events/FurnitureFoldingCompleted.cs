@@ -27,10 +27,8 @@ public class FurnitureFoldingCompleted : FurnitureManufacturerBaseEvent
             Simulation.AverageProcessingOrderTime.AddValue(Simulation.SimulationTime - currentOrder.ArrivalTime);
             
             currentOrder.State = "Completed";
-            currentOrder.CurrentAssemblyLine = null;
 
-            currentAssemblyLine.CurrentOrder = null;
-            currentAssemblyLine.CurrentWorker = null;
+            Simulation.ReleaseAssemblyLine(currentAssemblyLine);
         }
         else
         {

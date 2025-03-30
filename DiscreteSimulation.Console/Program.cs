@@ -1,7 +1,8 @@
 ﻿using DiscreteSimulation.Console;
 using DiscreteSimulation.Core.Generators;
 
-var analyzer = new ConfigurationAnalyzer();
+//var analyzer = new ConfigurationAnalyzer(@"C:\Users\Dominik\Desktop\");
+var analyzer = new ConfigurationAnalyzer("/Users/dominik/Desktop/");
 
 analyzer.Configurations = new[,]
 {
@@ -46,45 +47,40 @@ analyzer.Configurations = new[,]
     { 2, 5, 18 }
     */
     
-    { 2, 2, 18 } // BASE
     
-    /*
-    { 2, 2, 18 }, // BASE
+    
+    // 3.5 Okolie experimentu s konfiguráciou <2,2,18>
+    { 2, 2, 18 },
     
     { 1, 2, 18 },
     { 3, 2, 18 },
-    { 4, 2, 18 },
-    { 5, 2, 18 },
-    { 6, 2, 18 },
-    { 7, 2, 18 },
-    
     { 2, 1, 18 },
     { 2, 3, 18 },
-    { 2, 4, 18 },
-    { 2, 5, 18 },
-    { 2, 6, 18 },
-    { 2, 7, 18 },
-    
-    { 2, 2, 10 },
-    { 2, 2, 11 },
-    { 2, 2, 12 },
-    { 2, 2, 13 },
-    { 2, 2, 14 },
-    { 2, 2, 15 },
-    { 2, 2, 16 },
     { 2, 2, 17 },
     { 2, 2, 19 },
-    { 2, 2, 20 },
-    { 2, 2, 21 },
-    { 2, 2, 22 },
-    { 2, 2, 23 },
-    { 2, 2, 24 },
-    { 2, 2, 25 },
-    { 2, 2, 26 },
-    { 2, 2, 27 },
-    { 2, 2, 28 },
-    { 2, 2, 29 }
-    */
+    
+    { 1, 1, 18 },
+    { 1, 3, 18 },
+    { 3, 1, 18 },
+    { 3, 3, 18 },
+    { 1, 2, 17 },
+    { 1, 2, 19 },
+    { 3, 2, 17 },
+    { 3, 2, 19 },
+    { 2, 1, 17 },
+    { 2, 1, 19 },
+    { 2, 3, 17 },
+    { 2, 3, 19 },
+    
+    { 1, 1, 17 },
+    { 1, 1, 19 },
+    { 1, 3, 17 },
+    { 1, 3, 19 },
+    { 3, 1, 17 },
+    { 3, 1, 19 },
+    { 3, 3, 17 },
+    { 3, 3, 19 }
+    
 };
 
 analyzer.AnalyzeConfigurations(1_000);

@@ -7,21 +7,24 @@ public class ConfigurationAnalyzer
     private readonly FurnitureManufacturerSimulation _simulation = new();
     
     private int _replications;
+
+    private readonly string _basePath;
     
     private string _csvFilePath = string.Empty;
 
     public int[,] Configurations { get; set; } = new int[3, 3];
     
-    public ConfigurationAnalyzer()
+    public ConfigurationAnalyzer(string basePath)
     {
+        _basePath = basePath;
         _simulation.SimulationEnded += PrintSimulationResults;
     }
     
     public void AnalyzeConfigurations(int replications)
     {
         _replications = replications;
-        
-        _csvFilePath = @"C:\Users\Dominik\Desktop\" + "SimulationResults_" + DateTime.Now.ToString("yyyy-MM-dd_HH-mm-ss") + ".csv";
+
+        _csvFilePath = Path.Combine(_basePath, "SimulationResults_" + DateTime.Now.ToString("yyyy-MM-dd_HH-mm-ss") + ".csv");
         
         // CSV file header
         File.WriteAllText(_csvFilePath, "WorkersA;WorkersB;WorkersC;" +

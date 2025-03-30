@@ -75,6 +75,8 @@ public class FurnitureManufacturerSimulation : EventSimulationCore
     public Worker[] WorkersGroupC { get; private set; }
     
     public List<AssemblyLine> AssemblyLines { get; private set; } = new();
+
+    public PriorityQueue<AssemblyLine, int> AvailableAssemblyLines = new();
     
     public List<Order> Orders { get; private set; } = new();
     
@@ -150,6 +152,7 @@ public class FurnitureManufacturerSimulation : EventSimulationCore
         
         Orders.Clear();
         AssemblyLines.Clear();
+        AvailableAssemblyLines.Clear();
         InitializeWorkers();
         
         AverageProcessingOrderTime.Clear();
@@ -255,12 +258,9 @@ public class FurnitureManufacturerSimulation : EventSimulationCore
 
     public AssemblyLine RequestFreeAssemblyLine()
     {
-        foreach (var assemblyLine in AssemblyLines)
+        if (AvailableAssemblyLines.Count > 0)
         {
-            if (assemblyLine.CurrentOrder == null)
-            {
-                return assemblyLine;
-            }
+            return AvailableAssemblyLines.Dequeue();
         }
         
         var newAssemblyLine = new AssemblyLine
@@ -273,6 +273,15 @@ public class FurnitureManufacturerSimulation : EventSimulationCore
         AssemblyLines.Add(newAssemblyLine);
         
         return newAssemblyLine;
+    }
+    
+    public void ReleaseAssemblyLine(AssemblyLine assemblyLine)
+    {
+        assemblyLine.CurrentOrder.CurrentAssemblyLine = null;
+        assemblyLine.CurrentOrder = null;
+        assemblyLine.CurrentWorker = null;
+        
+        AvailableAssemblyLines.Enqueue(assemblyLine, assemblyLine.Id);
     }
 
     public List<OrderDTO> GetCurrentOrderDTOs()

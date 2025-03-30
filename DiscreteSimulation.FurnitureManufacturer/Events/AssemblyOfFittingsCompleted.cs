@@ -20,10 +20,8 @@ public class AssemblyOfFittingsCompleted : FurnitureManufacturerBaseEvent
         Simulation.AverageProcessingOrderTime.AddValue(Simulation.SimulationTime - currentOrder.ArrivalTime);
         
         currentOrder.State = "Completed";
-        currentOrder.CurrentAssemblyLine = null;
         
-        currentAssemblyLine.CurrentOrder = null;
-        currentAssemblyLine.CurrentWorker = null;
+        Simulation.ReleaseAssemblyLine(currentAssemblyLine);
         
         // Pracovník zo skupiny C je voľný, preto najskôr prednostne skontrolujeme frontu čakajúcich zložených skríň
         if (Simulation.PendingFoldedClosetsQueue.Count > 0)
