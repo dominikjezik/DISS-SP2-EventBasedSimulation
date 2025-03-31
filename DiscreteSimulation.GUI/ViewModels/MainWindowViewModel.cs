@@ -193,6 +193,18 @@ public class MainWindowViewModel : ViewModelBase
         }
     }
     
+    private bool _enableWorkerLocationPreference = true;
+    
+    public bool EnableWorkerLocationPreference
+    {
+        get => _enableWorkerLocationPreference;
+        set
+        {
+            _enableWorkerLocationPreference = value;
+            OnPropertyChanged();
+        }
+    }
+    
     #endregion
 
     #region ReplicationControls

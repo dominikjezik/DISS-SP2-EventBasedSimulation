@@ -17,6 +17,8 @@ public class FurnitureManufacturerSimulation : EventSimulationCore
     public int CountOfWorkersGroupB { get; set; }
     
     public int CountOfWorkersGroupC { get; set; }
+    
+    public bool EnableWorkerLocationPreference { get; set; } = true;
 
     #endregion
     
@@ -227,6 +229,11 @@ public class FurnitureManufacturerSimulation : EventSimulationCore
                 break;
             default:
                 throw new ArgumentException("Invalid worker group");
+        }
+
+        if (!EnableWorkerLocationPreference)
+        {
+            return workers.FirstOrDefault(worker => !worker.IsBusy);
         }
         
         Worker? availableWorker = null;

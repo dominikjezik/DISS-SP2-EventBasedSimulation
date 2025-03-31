@@ -103,7 +103,17 @@
                 Content="{Binding CurrentSimulationTime}" />
         </StackPanel>
         
-        <StackPanel Grid.Row="0" Grid.Column="2" Orientation="Horizontal" Margin="0,0,0,10" HorizontalAlignment="Left">
+        <StackPanel Grid.Row="0" Grid.Column="2" 
+                    Orientation="Horizontal" 
+                    Margin="0,0,0,10" 
+                    HorizontalAlignment="Left">
+            
+            <CheckBox 
+                IsChecked="{Binding EnableWorkerLocationPreference}"
+                IsEnabled="{Binding IsStartSimulationButtonEnabled}"
+                IsVisible="{Binding IsMultipleReplications}"
+                Margin="0,10,20,0">Worker location preference</CheckBox>
+            
             <Label 
                 VerticalAlignment="Center"
                 Margin="0,10,10,0" >Max replication time</Label>
@@ -210,7 +220,7 @@
             
             <Grid
                 Grid.Row="1" Grid.Column="2"
-                RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto" ColumnDefinitions="Auto,*,Auto"
+                RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto" ColumnDefinitions="Auto,*,Auto"
                 Margin="10,0,0,0">
                 
                 <Label
@@ -392,6 +402,12 @@
                         Height="20"
                         Width="40" />
                 </StackPanel>
+                
+                <CheckBox 
+                    Grid.Row="9" Grid.Column="0" Grid.ColumnSpan="3"
+                    IsChecked="{Binding EnableWorkerLocationPreference}"
+                    IsEnabled="{Binding IsStartSimulationButtonEnabled}"
+                    Margin="0,10,20,0">Worker location preference</CheckBox>
                 
             </Grid>
             

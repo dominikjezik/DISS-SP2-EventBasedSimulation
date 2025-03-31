@@ -67,6 +67,7 @@ public partial class MainWindow : Window
         _viewModel.Simulation.CountOfWorkersGroupA = _viewModel.CountOfWorkersGroupA;
         _viewModel.Simulation.CountOfWorkersGroupB = _viewModel.CountOfWorkersGroupB;
         _viewModel.Simulation.CountOfWorkersGroupC = _viewModel.CountOfWorkersGroupC;
+        _viewModel.Simulation.EnableWorkerLocationPreference = _viewModel.EnableWorkerLocationPreference;
         
         _latestGUIUpdate = -1;
         _skippedGUIUpdates = 0;
