@@ -11,6 +11,7 @@ public class OrderDTO : INotifyPropertyChanged, IUpdatable<OrderDTO>
     private string _state;
     private string _place;
     private string _arrivalTime;
+    private string _waitingTime;
 
     public int Id
     {
@@ -66,13 +67,25 @@ public class OrderDTO : INotifyPropertyChanged, IUpdatable<OrderDTO>
             OnPropertyChanged(nameof(ArrivalTime));
         }
     }
+    
+    public string WaitingTime
+    {
+        get => _waitingTime;
+        set
+        {
+            if (value.Equals(_waitingTime)) return;
+            _waitingTime = value;
+            OnPropertyChanged(nameof(WaitingTime));
+        }
+    }
 
-    public void Update(Order order)
+    public void Update(Order order, double currentSimulationTime)
     {
         Id = order.Id;
         Type = order.Type;
         State = order.State;
         ArrivalTime = order.ArrivalTime.ToString("F2");
+        WaitingTime = (currentSimulationTime - order.StartedWaitingTime).FormatToSimulationTime(timeOnly: true);
     }
     
     public void Update(OrderDTO orderDTO)
@@ -81,6 +94,7 @@ public class OrderDTO : INotifyPropertyChanged, IUpdatable<OrderDTO>
         Type = orderDTO.Type;
         State = orderDTO.State;
         ArrivalTime = orderDTO.ArrivalTime.FormatToSimulationTime(shortFormat: true);
+        WaitingTime = orderDTO.WaitingTime;
     }
 
     public event PropertyChangedEventHandler? PropertyChanged;
@@ -93,10 +107,10 @@ public class OrderDTO : INotifyPropertyChanged, IUpdatable<OrderDTO>
 
 public static class OrderDTOExtensions
 {
-    public static OrderDTO ToDTO(this Order order)
+    public static OrderDTO ToDTO(this Order order, double currentSimulationTime)
     {
         var orderDTO = new OrderDTO();
-        orderDTO.Update(order);
+        orderDTO.Update(order, currentSimulationTime);
         return orderDTO;
     }
 }

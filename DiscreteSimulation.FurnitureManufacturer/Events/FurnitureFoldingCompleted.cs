@@ -40,6 +40,7 @@ public class FurnitureFoldingCompleted : FurnitureManufacturerBaseEvent
             {
                 // Pracovník nie je k dispozícii, skriňa sa pridá do frontu čakajúcich zložených skríň
                 currentOrder.State = "Folded (waiting in queue)";
+                currentOrder.StartedWaitingTime = Simulation.SimulationTime;
                 Simulation.PendingFoldedClosetsQueue.Enqueue(currentOrder);
             }
             else
@@ -72,6 +73,8 @@ public class FurnitureFoldingCompleted : FurnitureManufacturerBaseEvent
                     throw new Exception("Undefined position of worker C");
                 }
                 
+                Simulation.AverageWaitingTimeInPendingFoldedClosetsQueue.AddValue(0);
+                
                 var arrivalToLineWithFoldedCloset = new ArrivalToLineWithFoldedCloset(arrivalTime, Simulation, availableWorker, currentAssemblyLine);
                 
                 Simulation.ScheduleEvent(arrivalToLineWithFoldedCloset);
@@ -85,6 +88,8 @@ public class FurnitureFoldingCompleted : FurnitureManufacturerBaseEvent
             
             CurrentWorker.CurrentOrder = pendingVarnishedMaterial;
             CurrentWorker.IsMovingToAssemblyLine = true;
+            
+            Simulation.AverageWaitingTimeInPendingVarnishedMaterialsQueue.AddValue(Simulation.SimulationTime - pendingVarnishedMaterial.StartedWaitingTime);
             
             var arrivalTime = Simulation.SimulationTime + Simulation.ArrivalTimeBetweenLineAndWarehouseGenerator.Next();
             var arrivalToLineWithVarnishedMaterial = new ArrivalToLineWithVarnishedMaterial(arrivalTime, Simulation, CurrentWorker, pendingVarnishedMaterial.CurrentAssemblyLine);

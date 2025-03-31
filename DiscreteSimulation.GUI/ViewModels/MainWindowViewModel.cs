@@ -209,7 +209,7 @@ public class MainWindowViewModel : ViewModelBase
 
     #region ReplicationControls
 
-    private long _replications = 10;
+    private long _replications = 1;
     
     public long Replications
     {
@@ -246,6 +246,35 @@ public class MainWindowViewModel : ViewModelBase
         }
     }
     
+    private string _selectedTimeUnits = "seconds";
+    
+    public string SelectedTimeUnits
+    {
+        get => _selectedTimeUnits;
+        set
+        {
+            _selectedTimeUnits = value;
+            OnPropertyChanged();
+            
+            OnPropertyChanged(nameof(ReplicationOrderProcessingTime));
+            OnPropertyChanged(nameof(ReplicationPendingOrdersWaitingTime));
+            OnPropertyChanged(nameof(ReplicationCutMaterialsWaitingTime));
+            OnPropertyChanged(nameof(ReplicationVarnishedMaterialsWaitingTime));
+            OnPropertyChanged(nameof(ReplicationFoldedClosetsWaitingTime));
+            
+            OnPropertyChanged(nameof(SimulationCurrentProcessingOrderTime));
+            OnPropertyChanged(nameof(SimulationCurrentProcessingOrderTimeCI));
+            OnPropertyChanged(nameof(SimulationPendingOrdersWaitingTime));
+            OnPropertyChanged(nameof(SimulationPendingOrdersWaitingTimeCI));
+            OnPropertyChanged(nameof(SimulationCutMaterialsWaitingTime));
+            OnPropertyChanged(nameof(SimulationCutMaterialsWaitingTimeCI));
+            OnPropertyChanged(nameof(SimulationVarnishedMaterialsWaitingTime));
+            OnPropertyChanged(nameof(SimulationVarnishedMaterialsWaitingTimeCI));
+            OnPropertyChanged(nameof(SimulationFoldedClosetsWaitingTime));
+            OnPropertyChanged(nameof(SimulationFoldedClosetsWaitingTimeCI));
+        }
+    }
+    
     #endregion
     
     #region SingleReplicationControls
@@ -275,16 +304,36 @@ public class MainWindowViewModel : ViewModelBase
         }
     }
     
-    private string _replicationOrderProcessingTime = "-";
-
+    private string _replicationOrderProcessingTimeSeconds = "-";
+    private string _replicationOrderProcessingTimeMinutes = "-";
+    private string _replicationOrderProcessingTimeHours = "-";
+    
     public string ReplicationOrderProcessingTime
     {
-        get => _replicationOrderProcessingTime;
-        set
+        get
         {
-            _replicationOrderProcessingTime = value;
-            OnPropertyChanged();
+            return _selectedTimeUnits switch
+            {
+                "seconds" => _replicationOrderProcessingTimeSeconds,
+                "minutes" => _replicationOrderProcessingTimeMinutes,
+                "hours" => _replicationOrderProcessingTimeHours,
+                _ => "-"
+            };
         }
+    }
+    
+    public void SetReplicationOrderProcessingTime(double averageTime)
+    {
+        if (double.IsNaN(averageTime))
+        {
+            averageTime = 0;
+        }
+        
+        _replicationOrderProcessingTimeSeconds = $"{averageTime:F2}";
+        _replicationOrderProcessingTimeMinutes = $"{averageTime / 60:F2}";
+        _replicationOrderProcessingTimeHours = $"{averageTime / 3600:F2}";
+        
+        OnPropertyChanged(nameof(ReplicationOrderProcessingTime));
     }
     
     private string _replicationPendingOrders = "-";
@@ -298,6 +347,173 @@ public class MainWindowViewModel : ViewModelBase
             OnPropertyChanged();
         }
     }
+    
+    private string _replicationPendingCutMaterials = "-";
+    
+    public string ReplicationPendingCutMaterials
+    {
+        get => _replicationPendingCutMaterials;
+        set
+        {
+            _replicationPendingCutMaterials = value;
+            OnPropertyChanged();
+        }
+    }
+    
+    private string _replicationPendingVarnishedMaterials = "-";
+    
+    public string ReplicationPendingVarnishedMaterials
+    {
+        get => _replicationPendingVarnishedMaterials;
+        set
+        {
+            _replicationPendingVarnishedMaterials = value;
+            OnPropertyChanged();
+        }
+    }
+    
+    private string _replicationPendingFoldedClosets = "-";
+    
+    public string ReplicationPendingFoldedClosets
+    {
+        get => _replicationPendingFoldedClosets;
+        set
+        {
+            _replicationPendingFoldedClosets = value;
+            OnPropertyChanged();
+        }
+    }
+    
+    
+    private string _replicationPendingOrdersWaitingTimeSeconds = "-";
+    private string _replicationPendingOrdersWaitingTimeMinutes = "-";
+    private string _replicationPendingOrdersWaitingTimeHours = "-";
+    
+    public string ReplicationPendingOrdersWaitingTime
+    {
+        get
+        {
+            return _selectedTimeUnits switch
+            {
+                "seconds" => _replicationPendingOrdersWaitingTimeSeconds,
+                "minutes" => _replicationPendingOrdersWaitingTimeMinutes,
+                "hours" => _replicationPendingOrdersWaitingTimeHours,
+                _ => "-"
+            };
+        }
+    }
+    
+    public void SetReplicationPendingOrdersWaitingTime(double averageTime)
+    {
+        if (double.IsNaN(averageTime))
+        {
+            averageTime = 0;
+        }
+        
+        _replicationPendingOrdersWaitingTimeSeconds = $"{averageTime:F2}";
+        _replicationPendingOrdersWaitingTimeMinutes = $"{averageTime / 60:F2}";
+        _replicationPendingOrdersWaitingTimeHours = $"{averageTime / 3600:F2}";
+        
+        OnPropertyChanged(nameof(ReplicationPendingOrdersWaitingTime));
+    }
+    
+    private string _replicationCutMaterialsWaitingTimeSeconds = "-";
+    private string _replicationCutMaterialsWaitingTimeMinutes = "-";
+    private string _replicationCutMaterialsWaitingTimeHours = "-";
+    
+    public string ReplicationCutMaterialsWaitingTime
+    {
+        get
+        {
+            return _selectedTimeUnits switch
+            {
+                "seconds" => _replicationCutMaterialsWaitingTimeSeconds,
+                "minutes" => _replicationCutMaterialsWaitingTimeMinutes,
+                "hours" => _replicationCutMaterialsWaitingTimeHours,
+                _ => "-"
+            };
+        }
+    }
+    
+    public void SetReplicationCutMaterialsWaitingTime(double averageTime)
+    {
+        if (double.IsNaN(averageTime))
+        {
+            averageTime = 0;
+        }
+        
+        _replicationCutMaterialsWaitingTimeSeconds = $"{averageTime:F2}";
+        _replicationCutMaterialsWaitingTimeMinutes = $"{averageTime / 60:F2}";
+        _replicationCutMaterialsWaitingTimeHours = $"{averageTime / 3600:F2}";
+        
+        OnPropertyChanged(nameof(ReplicationCutMaterialsWaitingTime));
+    }
+    
+    private string _replicationVarnishedMaterialsWaitingTimeSeconds = "-";
+    private string _replicationVarnishedMaterialsWaitingTimeMinutes = "-";
+    private string _replicationVarnishedMaterialsWaitingTimeHours = "-";
+    
+    public string ReplicationVarnishedMaterialsWaitingTime
+    {
+        get
+        {
+            return _selectedTimeUnits switch
+            {
+                "seconds" => _replicationVarnishedMaterialsWaitingTimeSeconds,
+                "minutes" => _replicationVarnishedMaterialsWaitingTimeMinutes,
+                "hours" => _replicationVarnishedMaterialsWaitingTimeHours,
+                _ => "-"
+            };
+        }
+    }
+    
+    public void SetReplicationVarnishedMaterialsWaitingTime(double averageTime)
+    {
+        if (double.IsNaN(averageTime))
+        {
+            averageTime = 0;
+        }
+        
+        _replicationVarnishedMaterialsWaitingTimeSeconds = $"{averageTime:F2}";
+        _replicationVarnishedMaterialsWaitingTimeMinutes = $"{averageTime / 60:F2}";
+        _replicationVarnishedMaterialsWaitingTimeHours = $"{averageTime / 3600:F2}";
+        
+        OnPropertyChanged(nameof(ReplicationVarnishedMaterialsWaitingTime));
+    }
+    
+    private string _replicationFoldedClosetsWaitingTimeSeconds = "-";
+    private string _replicationFoldedClosetsWaitingTimeMinutes = "-";
+    private string _replicationFoldedClosetsWaitingTimeHours = "-";
+    
+    public string ReplicationFoldedClosetsWaitingTime
+    {
+        get
+        {
+            return _selectedTimeUnits switch
+            {
+                "seconds" => _replicationFoldedClosetsWaitingTimeSeconds,
+                "minutes" => _replicationFoldedClosetsWaitingTimeMinutes,
+                "hours" => _replicationFoldedClosetsWaitingTimeHours,
+                _ => "-"
+            };
+        }
+    }
+    
+    public void SetReplicationFoldedClosetsWaitingTime(double averageTime)
+    {
+        if (double.IsNaN(averageTime))
+        {
+            averageTime = 0;
+        }
+        
+        _replicationFoldedClosetsWaitingTimeSeconds = $"{averageTime:F2}";
+        _replicationFoldedClosetsWaitingTimeMinutes = $"{averageTime / 60:F2}";
+        _replicationFoldedClosetsWaitingTimeHours = $"{averageTime / 3600:F2}";
+        
+        OnPropertyChanged(nameof(ReplicationFoldedClosetsWaitingTime));
+    }
+    
+    
     
     private string _pendingOrdersQueueCount = "0";
 
@@ -511,73 +727,28 @@ public class MainWindowViewModel : ViewModelBase
             OnPropertyChanged();
         }
     }
-    
-    private string _selectedTimeUnits = "seconds";
-    
-    public string SelectedTimeUnits
-    {
-        get => _selectedTimeUnits;
-        set
-        {
-            _selectedTimeUnits = value;
-            OnPropertyChanged();
-            OnPropertyChanged(nameof(SimulationCurrentProcessingOrderTime));
-            OnPropertyChanged(nameof(SimulationCurrentProcessingOrderTimeCI));
-        }
-    }
 
+    private string _simulationCurrentProcessingOrderTimeSeconds = "-";
+    private string _simulationCurrentProcessingOrderTimeMinutes = "-";
+    private string _simulationCurrentProcessingOrderTimeHours = "-";
+    
     public string SimulationCurrentProcessingOrderTime
     {
         get
         {
             return _selectedTimeUnits switch
             {
-                "seconds" => SimulationCurrentProcessingOrderTimeSeconds,
-                "minutes" => SimulationCurrentProcessingOrderTimeMinutes,
-                "hours" => SimulationCurrentProcessingOrderTimeHours,
+                "seconds" => _simulationCurrentProcessingOrderTimeSeconds,
+                "minutes" => _simulationCurrentProcessingOrderTimeMinutes,
+                "hours" => _simulationCurrentProcessingOrderTimeHours,
                 _ => "-"
             };
         }
     }
-
-    private string _simulationCurrentProcessingOrderTimeSeconds = "-";
-
-    public string SimulationCurrentProcessingOrderTimeSeconds
-    {
-        get => _simulationCurrentProcessingOrderTimeSeconds;
-        set
-        {
-            _simulationCurrentProcessingOrderTimeSeconds = value;
-            OnPropertyChanged();
-            OnPropertyChanged(nameof(SimulationCurrentProcessingOrderTime));
-        }
-    }
     
-    private string _simulationCurrentProcessingOrderTimeMinutes = "-";
-
-    public string SimulationCurrentProcessingOrderTimeMinutes
-    {
-        get => _simulationCurrentProcessingOrderTimeMinutes;
-        set
-        {
-            _simulationCurrentProcessingOrderTimeMinutes = value;
-            OnPropertyChanged();
-            OnPropertyChanged(nameof(SimulationCurrentProcessingOrderTime));
-        }
-    }
-    
-    private string _simulationCurrentProcessingOrderTimeHours = "-";
-
-    public string SimulationCurrentProcessingOrderTimeHours
-    {
-        get => _simulationCurrentProcessingOrderTimeHours;
-        set
-        {
-            _simulationCurrentProcessingOrderTimeHours = value;
-            OnPropertyChanged();
-            OnPropertyChanged(nameof(SimulationCurrentProcessingOrderTime));
-        }
-    }
+    private string _simulationCurrentProcessingOrderTimeSecondsCI = "-";
+    private string _simulationCurrentProcessingOrderTimeMinutesCI = "-";
+    private string _simulationCurrentProcessingOrderTimeHoursCI = "-";
     
     public string SimulationCurrentProcessingOrderTimeCI
     {
@@ -585,51 +756,26 @@ public class MainWindowViewModel : ViewModelBase
         {
             return _selectedTimeUnits switch
             {
-                "seconds" => SimulationCurrentProcessingOrderTimeSecondsCI,
-                "minutes" => SimulationCurrentProcessingOrderTimeMinutesCI,
-                "hours" => SimulationCurrentProcessingOrderTimeHoursCI,
+                "seconds" => _simulationCurrentProcessingOrderTimeSecondsCI,
+                "minutes" => _simulationCurrentProcessingOrderTimeMinutesCI,
+                "hours" => _simulationCurrentProcessingOrderTimeHoursCI,
                 _ => "-"
             };
         }
     }
-    
-    private string _simulationCurrentProcessingOrderTimeSecondsCI = "-";
-    
-    public string SimulationCurrentProcessingOrderTimeSecondsCI
+
+    public void SetSimulationCurrentProcessingOrderTime(double averageTime, double ciLowerTime, double ciUpperTime)
     {
-        get => _simulationCurrentProcessingOrderTimeSecondsCI;
-        set
-        {
-            _simulationCurrentProcessingOrderTimeSecondsCI = value;
-            OnPropertyChanged();
-            OnPropertyChanged(nameof(SimulationCurrentProcessingOrderTimeCI));
-        }
-    }
-    
-    private string _simulationCurrentProcessingOrderTimeMinutesCI = "-";
-    
-    public string SimulationCurrentProcessingOrderTimeMinutesCI
-    {
-        get => _simulationCurrentProcessingOrderTimeMinutesCI;
-        set
-        {
-            _simulationCurrentProcessingOrderTimeMinutesCI = value;
-            OnPropertyChanged();
-            OnPropertyChanged(nameof(SimulationCurrentProcessingOrderTimeCI));
-        }
-    }
-    
-    private string _simulationCurrentProcessingOrderTimeHoursCI = "-";
-    
-    public string SimulationCurrentProcessingOrderTimeHoursCI
-    {
-        get => _simulationCurrentProcessingOrderTimeHoursCI;
-        set
-        {
-            _simulationCurrentProcessingOrderTimeHoursCI = value;
-            OnPropertyChanged();
-            OnPropertyChanged(nameof(SimulationCurrentProcessingOrderTimeCI));
-        }
+        _simulationCurrentProcessingOrderTimeSeconds = $"{averageTime:F2}";
+        _simulationCurrentProcessingOrderTimeMinutes = $"{averageTime / 60:F2}";
+        _simulationCurrentProcessingOrderTimeHours = $"{averageTime / 3600:F2}";
+        
+        _simulationCurrentProcessingOrderTimeSecondsCI = $"<{ciLowerTime:F2} ; {ciUpperTime:F2}>";
+        _simulationCurrentProcessingOrderTimeMinutesCI = $"<{ciLowerTime / 60:F2} ; {ciUpperTime / 60:F2}>";
+        _simulationCurrentProcessingOrderTimeHoursCI = $"<{ciLowerTime / 3600:F2} ; {ciUpperTime / 3600:F2}>";
+
+        OnPropertyChanged(nameof(SimulationCurrentProcessingOrderTime));
+        OnPropertyChanged(nameof(SimulationCurrentProcessingOrderTimeCI));
     }
     
     private string _simulationPendingOrders = "-";
@@ -727,6 +873,210 @@ public class MainWindowViewModel : ViewModelBase
             OnPropertyChanged();
         }
     }
+    
+    private string _simulationPendingOrdersWaitingTimeSeconds = "-";
+    private string _simulationPendingOrdersWaitingTimeMinutes = "-";
+    private string _simulationPendingOrdersWaitingTimeHours = "-";
+    
+    public string SimulationPendingOrdersWaitingTime
+    {
+        get
+        {
+            return _selectedTimeUnits switch
+            {
+                "seconds" => _simulationPendingOrdersWaitingTimeSeconds,
+                "minutes" => _simulationPendingOrdersWaitingTimeMinutes,
+                "hours" => _simulationPendingOrdersWaitingTimeHours,
+                _ => "-"
+            };
+        }
+    }
+    
+    private string _simulationPendingOrdersWaitingTimeSecondsCI = "-";
+    private string _simulationPendingOrdersWaitingTimeMinutesCI = "-";
+    private string _simulationPendingOrdersWaitingTimeHoursCI = "-";
+    
+    public string SimulationPendingOrdersWaitingTimeCI
+    {
+        get
+        {
+            return _selectedTimeUnits switch
+            {
+                "seconds" => _simulationPendingOrdersWaitingTimeSecondsCI,
+                "minutes" => _simulationPendingOrdersWaitingTimeMinutesCI,
+                "hours" => _simulationPendingOrdersWaitingTimeHoursCI,
+                _ => "-"
+            };
+        }
+    }
+    
+    public void SetSimulationPendingOrdersWaitingTime(double averageTime, double ciLowerTime, double ciUpperTime)
+    {
+        _simulationPendingOrdersWaitingTimeSeconds = $"{averageTime:F2}";
+        _simulationPendingOrdersWaitingTimeMinutes = $"{averageTime / 60:F2}";
+        _simulationPendingOrdersWaitingTimeHours = $"{averageTime / 3600:F2}";
+           
+        _simulationPendingOrdersWaitingTimeSecondsCI = $"<{ciLowerTime:F2} ; {ciUpperTime:F2}>";
+        _simulationPendingOrdersWaitingTimeMinutesCI = $"<{ciLowerTime / 60:F2} ; {ciUpperTime / 60:F2}>";
+        _simulationPendingOrdersWaitingTimeHoursCI = $"<{ciLowerTime / 3600:F2} ; {ciUpperTime / 3600:F2}>";
+
+        OnPropertyChanged(nameof(SimulationPendingOrdersWaitingTime));
+        OnPropertyChanged(nameof(SimulationPendingOrdersWaitingTimeCI));
+    }
+    
+    
+    private string _simulationCutMaterialsWaitingTimeSeconds = "-";
+    private string _simulationCutMaterialsWaitingTimeMinutes = "-";
+    private string _simulationCutMaterialsWaitingTimeHours = "-";
+    
+    public string SimulationCutMaterialsWaitingTime
+    {
+        get
+        {
+            return _selectedTimeUnits switch
+            {
+                "seconds" => _simulationCutMaterialsWaitingTimeSeconds,
+                "minutes" => _simulationCutMaterialsWaitingTimeMinutes,
+                "hours" => _simulationCutMaterialsWaitingTimeHours,
+                _ => "-"
+            };
+        }
+    }
+    
+    private string _simulationCutMaterialsWaitingTimeSecondsCI = "-";
+    private string _simulationCutMaterialsWaitingTimeMinutesCI = "-";
+    private string _simulationCutMaterialsWaitingTimeHoursCI = "-";
+    
+    public string SimulationCutMaterialsWaitingTimeCI
+    {
+        get
+        {
+            return _selectedTimeUnits switch
+            {
+                "seconds" => _simulationCutMaterialsWaitingTimeSecondsCI,
+                "minutes" => _simulationCutMaterialsWaitingTimeMinutesCI,
+                "hours" => _simulationCutMaterialsWaitingTimeHoursCI,
+                _ => "-"
+            };
+        }
+    }
+    
+    public void SetSimulationCutMaterialsWaitingTime(double averageTime, double ciLowerTime, double ciUpperTime)
+    {
+        _simulationCutMaterialsWaitingTimeSeconds = $"{averageTime:F2}";
+        _simulationCutMaterialsWaitingTimeMinutes = $"{averageTime / 60:F2}";
+        _simulationCutMaterialsWaitingTimeHours = $"{averageTime / 3600:F2}";
+           
+        _simulationCutMaterialsWaitingTimeSecondsCI = $"<{ciLowerTime:F2} ; {ciUpperTime:F2}>";
+        _simulationCutMaterialsWaitingTimeMinutesCI = $"<{ciLowerTime / 60:F2} ; {ciUpperTime / 60:F2}>";
+        _simulationCutMaterialsWaitingTimeHoursCI = $"<{ciLowerTime / 3600:F2} ; {ciUpperTime / 3600:F2}>";
+
+        OnPropertyChanged(nameof(SimulationCutMaterialsWaitingTime));
+        OnPropertyChanged(nameof(SimulationCutMaterialsWaitingTimeCI));
+    }
+    
+    
+    private string _simulationVarnishedMaterialsWaitingTimeSeconds = "-";
+    private string _simulationVarnishedMaterialsWaitingTimeMinutes = "-";
+    private string _simulationVarnishedMaterialsWaitingTimeHours = "-";
+
+    public string SimulationVarnishedMaterialsWaitingTime
+    {
+        get
+        {
+            return _selectedTimeUnits switch
+            {
+                "seconds" => _simulationVarnishedMaterialsWaitingTimeSeconds,
+                "minutes" => _simulationVarnishedMaterialsWaitingTimeMinutes,
+                "hours" => _simulationVarnishedMaterialsWaitingTimeHours,
+                _ => "-"
+            };
+        }
+    }
+
+    private string _simulationVarnishedMaterialsWaitingTimeSecondsCI = "-";
+    private string _simulationVarnishedMaterialsWaitingTimeMinutesCI = "-";
+    private string _simulationVarnishedMaterialsWaitingTimeHoursCI = "-";
+
+    public string SimulationVarnishedMaterialsWaitingTimeCI
+    {
+        get
+        {
+            return _selectedTimeUnits switch
+            {
+                "seconds" => _simulationVarnishedMaterialsWaitingTimeSecondsCI,
+                "minutes" => _simulationVarnishedMaterialsWaitingTimeMinutesCI,
+                "hours" => _simulationVarnishedMaterialsWaitingTimeHoursCI,
+                _ => "-"
+            };
+        }
+    }
+
+    public void SetSimulationVarnishedMaterialsWaitingTime(double averageTime, double ciLowerTime, double ciUpperTime)
+    {
+        _simulationVarnishedMaterialsWaitingTimeSeconds = $"{averageTime:F2}";
+        _simulationVarnishedMaterialsWaitingTimeMinutes = $"{averageTime / 60:F2}";
+        _simulationVarnishedMaterialsWaitingTimeHours = $"{averageTime / 3600:F2}";
+            
+        _simulationVarnishedMaterialsWaitingTimeSecondsCI = $"<{ciLowerTime:F2} ; {ciUpperTime:F2}>";
+        _simulationVarnishedMaterialsWaitingTimeMinutesCI = $"<{ciLowerTime / 60:F2} ; {ciUpperTime / 60:F2}>";
+        _simulationVarnishedMaterialsWaitingTimeHoursCI = $"<{ciLowerTime / 3600:F2} ; {ciUpperTime / 3600:F2}>";
+
+        OnPropertyChanged(nameof(SimulationVarnishedMaterialsWaitingTime));
+        OnPropertyChanged(nameof(SimulationVarnishedMaterialsWaitingTimeCI));
+    }
+    
+    
+    private string _simulationFoldedClosetsWaitingTimeSeconds = "-";
+    private string _simulationFoldedClosetsWaitingTimeMinutes = "-";
+    private string _simulationFoldedClosetsWaitingTimeHours = "-";
+
+    public string SimulationFoldedClosetsWaitingTime
+    {
+        get
+        {
+            return _selectedTimeUnits switch
+            {
+                "seconds" => _simulationFoldedClosetsWaitingTimeSeconds,
+                "minutes" => _simulationFoldedClosetsWaitingTimeMinutes,
+                "hours" => _simulationFoldedClosetsWaitingTimeHours,
+                _ => "-"
+            };
+        }
+    }
+
+    private string _simulationFoldedClosetsWaitingTimeSecondsCI = "-";
+    private string _simulationFoldedClosetsWaitingTimeMinutesCI = "-";
+    private string _simulationFoldedClosetsWaitingTimeHoursCI = "-";
+
+    public string SimulationFoldedClosetsWaitingTimeCI
+    {
+        get
+        {
+            return _selectedTimeUnits switch
+            {
+                "seconds" => _simulationFoldedClosetsWaitingTimeSecondsCI,
+                "minutes" => _simulationFoldedClosetsWaitingTimeMinutesCI,
+                "hours" => _simulationFoldedClosetsWaitingTimeHoursCI,
+                _ => "-"
+            };
+        }
+    }
+
+    public void SetSimulationFoldedClosetsWaitingTime(double averageTime, double ciLowerTime, double ciUpperTime)
+    {
+        _simulationFoldedClosetsWaitingTimeSeconds = $"{averageTime:F2}";
+        _simulationFoldedClosetsWaitingTimeMinutes = $"{averageTime / 60:F2}";
+        _simulationFoldedClosetsWaitingTimeHours = $"{averageTime / 3600:F2}";
+        
+        _simulationFoldedClosetsWaitingTimeSecondsCI = $"<{ciLowerTime:F2} ; {ciUpperTime:F2}>";
+        _simulationFoldedClosetsWaitingTimeMinutesCI = $"<{ciLowerTime / 60:F2} ; {ciUpperTime / 60:F2}>";
+        _simulationFoldedClosetsWaitingTimeHoursCI = $"<{ciLowerTime / 3600:F2} ; {ciUpperTime / 3600:F2}>";
+
+        OnPropertyChanged(nameof(SimulationFoldedClosetsWaitingTime));
+        OnPropertyChanged(nameof(SimulationFoldedClosetsWaitingTimeCI));
+    }
+    
     
     private string _simulationWorkersAUtilization = "-";
     

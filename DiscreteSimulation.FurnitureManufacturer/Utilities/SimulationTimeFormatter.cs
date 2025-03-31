@@ -2,17 +2,17 @@
 
 public static class SimulationTimeFormatter
 {
-    public static string FormatToSimulationTime(this string simulationTime, bool shortFormat = false)
+    public static string FormatToSimulationTime(this string simulationTime, bool shortFormat = false, bool timeOnly = false)
     {
         if (double.TryParse(simulationTime, out double time))
         {
-            return FormatToSimulationTime(time, shortFormat);
+            return FormatToSimulationTime(time, shortFormat, timeOnly);
         }
         
         return simulationTime;
     }
     
-    public static string FormatToSimulationTime(this double simulationTime, bool shortFormat = false)
+    public static string FormatToSimulationTime(this double simulationTime, bool shortFormat = false, bool timeOnly = false)
     {
         var workingDays = Math.Floor(simulationTime / 28_800);
         simulationTime -= workingDays * 28_800;
@@ -25,6 +25,12 @@ public static class SimulationTimeFormatter
         
         var seconds = Math.Floor(simulationTime);
         simulationTime -= seconds;
+        
+        if (timeOnly)
+        {
+            hours += workingDays * 24;
+            return $"{hours:00}:{minutes:00}:{seconds:00}";
+        }
         
         var week = Math.Floor(workingDays / 5);
         workingDays -= week * 5;

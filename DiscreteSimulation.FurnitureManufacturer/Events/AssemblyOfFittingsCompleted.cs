@@ -31,6 +31,8 @@ public class AssemblyOfFittingsCompleted : FurnitureManufacturerBaseEvent
             CurrentWorker.CurrentOrder = pendingFoldedCloset;
             CurrentWorker.IsMovingToAssemblyLine = true;
             
+            Simulation.AverageWaitingTimeInPendingFoldedClosetsQueue.AddValue(Simulation.SimulationTime - pendingFoldedCloset.StartedWaitingTime);
+            
             var arrivalTime = Simulation.SimulationTime + Simulation.ArrivalTimeBetweenTwoLinesGenerator.Next();
             var arrivalToLineWithFoldedCloset = new ArrivalToLineWithFoldedCloset(arrivalTime, Simulation, CurrentWorker, pendingFoldedCloset.CurrentAssemblyLine);
             
@@ -43,6 +45,8 @@ public class AssemblyOfFittingsCompleted : FurnitureManufacturerBaseEvent
             
             CurrentWorker.CurrentOrder = pendingCutMaterial;
             CurrentWorker.IsMovingToAssemblyLine = true;
+            
+            Simulation.AverageWaitingTimeInPendingCutMaterialsQueue.AddValue(Simulation.SimulationTime - pendingCutMaterial.StartedWaitingTime);
             
             var arrivalTime = Simulation.SimulationTime + Simulation.ArrivalTimeBetweenTwoLinesGenerator.Next();
             var arrivalToLineWithCutMaterial = new ArrivalToLineWithCutMaterial(arrivalTime, Simulation, CurrentWorker, pendingCutMaterial.CurrentAssemblyLine);

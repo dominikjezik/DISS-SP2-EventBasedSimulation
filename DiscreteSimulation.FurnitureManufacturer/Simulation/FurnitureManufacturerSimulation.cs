@@ -87,9 +87,25 @@ public class FurnitureManufacturerSimulation : EventSimulationCore
     #region Statistics
 
     public Statistics AverageProcessingOrderTime { get; private set; } = new();
+
+    public Statistics AverageWaitingTimeInPendingOrdersQueue { get; private set; } = new();
+    
+    public Statistics AverageWaitingTimeInPendingCutMaterialsQueue { get; private set; } = new();
+    
+    public Statistics AverageWaitingTimeInPendingVarnishedMaterialsQueue{ get; private set; } = new();
+    
+    public Statistics AverageWaitingTimeInPendingFoldedClosetsQueue { get; private set; } = new();
     
     public Statistics SimulationAverageProcessingOrderTime { get; private set; } = new();
     
+    public Statistics SimulationAverageWaitingTimeInPendingOrdersQueue { get; private set; } = new();
+    
+    public Statistics SimulationAverageWaitingTimeInPendingCutMaterialsQueue { get; private set; } = new();
+    
+    public Statistics SimulationAverageWaitingTimeInPendingVarnishedMaterialsQueue { get; private set; } = new();
+    
+    public Statistics SimulationAverageWaitingTimeInPendingFoldedClosetsQueue { get; private set; } = new();
+
     public Statistics SimulationAveragePendingOrdersCount { get; private set; } = new();
     
     public Statistics SimulationAveragePendingCutMaterialsCount { get; private set; } = new();
@@ -123,6 +139,12 @@ public class FurnitureManufacturerSimulation : EventSimulationCore
         InitializeGenerators();
         
         SimulationAverageProcessingOrderTime.Clear();
+        
+        SimulationAverageWaitingTimeInPendingOrdersQueue.Clear();
+        SimulationAverageWaitingTimeInPendingCutMaterialsQueue.Clear();
+        SimulationAverageWaitingTimeInPendingVarnishedMaterialsQueue.Clear();
+        SimulationAverageWaitingTimeInPendingFoldedClosetsQueue.Clear();
+        
         SimulationAveragePendingOrdersCount.Clear();
         SimulationAveragePendingCutMaterialsCount.Clear();
         SimulationAveragePendingVarnishedMaterialsCount.Clear();
@@ -158,6 +180,10 @@ public class FurnitureManufacturerSimulation : EventSimulationCore
         InitializeWorkers();
         
         AverageProcessingOrderTime.Clear();
+        AverageWaitingTimeInPendingOrdersQueue.Clear();
+        AverageWaitingTimeInPendingCutMaterialsQueue.Clear();
+        AverageWaitingTimeInPendingVarnishedMaterialsQueue.Clear();
+        AverageWaitingTimeInPendingFoldedClosetsQueue.Clear();
     }
     
     public override void ExecuteReplication()
@@ -182,6 +208,11 @@ public class FurnitureManufacturerSimulation : EventSimulationCore
         }
         
         SimulationAverageProcessingOrderTime.AddValue(AverageProcessingOrderTime.Mean);
+        
+        SimulationAverageWaitingTimeInPendingOrdersQueue.AddValue(AverageWaitingTimeInPendingOrdersQueue.Mean);
+        SimulationAverageWaitingTimeInPendingCutMaterialsQueue.AddValue(AverageWaitingTimeInPendingCutMaterialsQueue.Mean);
+        SimulationAverageWaitingTimeInPendingVarnishedMaterialsQueue.AddValue(AverageWaitingTimeInPendingVarnishedMaterialsQueue.Mean);
+        SimulationAverageWaitingTimeInPendingFoldedClosetsQueue.AddValue(AverageWaitingTimeInPendingFoldedClosetsQueue.Mean);
         
         PendingOrdersQueue.RefreshStatistics();
         SimulationAveragePendingOrdersCount.AddValue(PendingOrdersQueue.AverageQueueLength);
@@ -293,7 +324,7 @@ public class FurnitureManufacturerSimulation : EventSimulationCore
 
     public List<OrderDTO> GetCurrentOrderDTOs()
     {
-        return Orders.Select(order => order.ToDTO()).ToList();
+        return Orders.Select(order => order.ToDTO(SimulationTime)).ToList();
     }
     
     public List<AssemblyLineDTO> GetCurrentAssemblyLineDTOs()
@@ -318,22 +349,22 @@ public class FurnitureManufacturerSimulation : EventSimulationCore
     
     public List<OrderDTO> GetCurrentPendingOrdersQueue()
     {
-        return PendingOrdersQueue.OriginalQueue.Select(order => order.ToDTO()).ToList();
+        return PendingOrdersQueue.OriginalQueue.Select(order => order.ToDTO(SimulationTime)).ToList();
     }
     
     public List<OrderDTO> GetCurrentPendingCutMaterialsQueue()
     {
-        return PendingCutMaterialsQueue.OriginalQueue.Select(order => order.ToDTO()).ToList();
+        return PendingCutMaterialsQueue.OriginalQueue.Select(order => order.ToDTO(SimulationTime)).ToList();
     }
     
     public List<OrderDTO> GetCurrentPendingVarnishedMaterialsQueue()
     {
-        return PendingVarnishedMaterialsQueue.OriginalQueue.Select(order => order.ToDTO()).ToList();
+        return PendingVarnishedMaterialsQueue.OriginalQueue.Select(order => order.ToDTO(SimulationTime)).ToList();
     }
     
     public List<OrderDTO> GetCurrentPendingFoldedClosetsQueue()
     {
-        return PendingFoldedClosetsQueue.OriginalQueue.Select(order => order.ToDTO()).ToList();
+        return PendingFoldedClosetsQueue.OriginalQueue.Select(order => order.ToDTO(SimulationTime)).ToList();
     }
     
     public List<WorkerDTO> GetAllWorkersSimulationUtilization()

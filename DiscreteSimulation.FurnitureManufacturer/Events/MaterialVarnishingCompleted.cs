@@ -29,6 +29,7 @@ public class MaterialVarnishingCompleted : FurnitureManufacturerBaseEvent
         {
             // Pracovník nie je k dispozícii, materiál sa pridá do frontu čakajúcich namorených a nalakovaných materiálov
             currentOrder.State = "Varnished (waiting in queue)";
+            currentOrder.StartedWaitingTime = Simulation.SimulationTime;
             Simulation.PendingVarnishedMaterialsQueue.Enqueue(currentOrder);
         }
         else
@@ -61,6 +62,8 @@ public class MaterialVarnishingCompleted : FurnitureManufacturerBaseEvent
                 throw new Exception("Undefined position of worker B");
             }
             
+            Simulation.AverageWaitingTimeInPendingVarnishedMaterialsQueue.AddValue(0);
+            
             var arrivalToLineWithVarnishedMaterial = new ArrivalToLineWithVarnishedMaterial(arrivalTime, Simulation, availableWorker, currentAssemblyLine);
             
             Simulation.ScheduleEvent(arrivalToLineWithVarnishedMaterial);
@@ -75,6 +78,8 @@ public class MaterialVarnishingCompleted : FurnitureManufacturerBaseEvent
             CurrentWorker.CurrentOrder = pendingFoldedCloset;
             CurrentWorker.IsMovingToAssemblyLine = true;
             
+            Simulation.AverageWaitingTimeInPendingFoldedClosetsQueue.AddValue(Simulation.SimulationTime - pendingFoldedCloset.StartedWaitingTime);
+            
             var arrivalTime = Simulation.SimulationTime + Simulation.ArrivalTimeBetweenTwoLinesGenerator.Next();
             var arrivalToLineWithFoldedCloset = new ArrivalToLineWithFoldedCloset(arrivalTime, Simulation, CurrentWorker, pendingFoldedCloset.CurrentAssemblyLine);
             
@@ -87,6 +92,8 @@ public class MaterialVarnishingCompleted : FurnitureManufacturerBaseEvent
             
             CurrentWorker.CurrentOrder = pendingCutMaterial;
             CurrentWorker.IsMovingToAssemblyLine = true;
+            
+            Simulation.AverageWaitingTimeInPendingCutMaterialsQueue.AddValue(Simulation.SimulationTime - pendingCutMaterial.StartedWaitingTime);
             
             var arrivalTime = Simulation.SimulationTime + Simulation.ArrivalTimeBetweenTwoLinesGenerator.Next();
             var arrivalToLineWithCutMaterial = new ArrivalToLineWithCutMaterial(arrivalTime, Simulation, CurrentWorker, pendingCutMaterial.CurrentAssemblyLine);

@@ -30,6 +30,8 @@ public class NewOrderArrival : FurnitureManufacturerBaseEvent
         {
             availableWorker.CurrentOrder = newOrder;
             
+            Simulation.AverageWaitingTimeInPendingOrdersQueue.AddValue(0);
+            
             var startOfOrderPreparation = new StartOfOrderPreparation(Simulation.SimulationTime, Simulation, availableWorker);
             
             Simulation.ScheduleEvent(startOfOrderPreparation);
@@ -64,7 +66,8 @@ public class NewOrderArrival : FurnitureManufacturerBaseEvent
             Id = ++_orderCounter,
             Type = furnitureType,
             State = "Pending",
-            ArrivalTime = Time
+            ArrivalTime = Time,
+            StartedWaitingTime = Time
         };
     }
 }

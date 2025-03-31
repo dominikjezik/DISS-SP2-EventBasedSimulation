@@ -172,7 +172,19 @@ public partial class MainWindow : Window
         var averageProcessingOrderTime = _viewModel.Simulation.AverageProcessingOrderTime.Mean;
         
         _viewModel.Simulation.PendingOrdersQueue.RefreshStatistics();
+        _viewModel.Simulation.PendingCutMaterialsQueue.RefreshStatistics();
+        _viewModel.Simulation.PendingVarnishedMaterialsQueue.RefreshStatistics();
+        _viewModel.Simulation.PendingFoldedClosetsQueue.RefreshStatistics();
+        
         var averagePendingOrdersCount = _viewModel.Simulation.PendingOrdersQueue.AverageQueueLength;
+        var averagePendingCutMaterialsCount = _viewModel.Simulation.PendingCutMaterialsQueue.AverageQueueLength;
+        var averagePendingVarnishedMaterialsCount = _viewModel.Simulation.PendingVarnishedMaterialsQueue.AverageQueueLength;
+        var averagePendingFoldedClosetsCount = _viewModel.Simulation.PendingFoldedClosetsQueue.AverageQueueLength;
+
+        var averageWaitingTimePendingOrders = _viewModel.Simulation.AverageWaitingTimeInPendingOrdersQueue.Mean;
+        var averageWaitingTimeCutMaterials = _viewModel.Simulation.AverageWaitingTimeInPendingCutMaterialsQueue.Mean;
+        var averageWaitingTimeVarnishedMaterials = _viewModel.Simulation.AverageWaitingTimeInPendingVarnishedMaterialsQueue.Mean;
+        var averageWaitingTimeFoldedClosets = _viewModel.Simulation.AverageWaitingTimeInPendingFoldedClosetsQueue.Mean;
         
         var pendingOrdersQueueCount = _viewModel.Simulation.PendingOrdersQueue.Count;
         var pendingCutMaterialsQueueCount = _viewModel.Simulation.PendingCutMaterialsQueue.Count;
@@ -214,8 +226,17 @@ public partial class MainWindow : Window
         Dispatcher.UIThread.Post(() =>
         {
             _viewModel.CurrentSimulationTime = simulationTime.FormatToSimulationTime();
-            _viewModel.ReplicationOrderProcessingTime = $"{averageProcessingOrderTime:F2}";
+            _viewModel.SetReplicationOrderProcessingTime(averageProcessingOrderTime);
+            
             _viewModel.ReplicationPendingOrders = $"{averagePendingOrdersCount:F2}";
+            _viewModel.ReplicationPendingCutMaterials = $"{averagePendingCutMaterialsCount:F2}";
+            _viewModel.ReplicationPendingVarnishedMaterials = $"{averagePendingVarnishedMaterialsCount:F2}";
+            _viewModel.ReplicationPendingFoldedClosets = $"{averagePendingFoldedClosetsCount:F2}";
+            
+            _viewModel.SetReplicationPendingOrdersWaitingTime(averageWaitingTimePendingOrders);
+            _viewModel.SetReplicationCutMaterialsWaitingTime(averageWaitingTimeCutMaterials);
+            _viewModel.SetReplicationVarnishedMaterialsWaitingTime(averageWaitingTimeVarnishedMaterials);
+            _viewModel.SetReplicationFoldedClosetsWaitingTime(averageWaitingTimeFoldedClosets);
             
             _viewModel.PendingOrdersQueueCount = $"{pendingOrdersQueueCount}";
             _viewModel.PendingCutMaterialsQueueCount = $"{pendingCutMaterialsQueueCount}";
@@ -259,8 +280,22 @@ public partial class MainWindow : Window
         var averagePendingVarnishedMaterialsCountCI = _viewModel.Simulation.SimulationAveragePendingVarnishedMaterialsCount.ConfidenceInterval95();
         var averagePendingFoldedClosetsCount = _viewModel.Simulation.SimulationAveragePendingFoldedClosetsCount.Mean;
         var averagePendingFoldedClosetsCountCI = _viewModel.Simulation.SimulationAveragePendingFoldedClosetsCount.ConfidenceInterval95();
+        
+        var averagePendingOrdersWaitingTime = _viewModel.Simulation.SimulationAverageWaitingTimeInPendingOrdersQueue.Mean;
+        var averagePendingOrdersWaitingTimeCI = _viewModel.Simulation.SimulationAverageWaitingTimeInPendingOrdersQueue.ConfidenceInterval95();
+        var averageCutMaterialsWaitingTime = _viewModel.Simulation.SimulationAverageWaitingTimeInPendingCutMaterialsQueue.Mean;
+        var averageCutMaterialsWaitingTimeCI = _viewModel.Simulation.SimulationAverageWaitingTimeInPendingCutMaterialsQueue.ConfidenceInterval95();
+        var averageVarnishedMaterialsWaitingTime = _viewModel.Simulation.SimulationAverageWaitingTimeInPendingVarnishedMaterialsQueue.Mean;
+        var averageVarnishedMaterialsWaitingTimeCI = _viewModel.Simulation.SimulationAverageWaitingTimeInPendingVarnishedMaterialsQueue.ConfidenceInterval95();
+        var averageFoldedClosetsWaitingTime = _viewModel.Simulation.SimulationAverageWaitingTimeInPendingFoldedClosetsQueue.Mean;
+        var averageFoldedClosetsWaitingTimeCI = _viewModel.Simulation.SimulationAverageWaitingTimeInPendingFoldedClosetsQueue.ConfidenceInterval95();
+        
+        
+        var averageWorkersGroupAUtilization = _viewModel.Simulation.SimulationAverageWorkersGroupAUtilization.Mean;
         var averageWorkersGroupAUtilizationCI = _viewModel.Simulation.SimulationAverageWorkersGroupAUtilization.ConfidenceInterval95();
+        var averageWorkersGroupBUtilization = _viewModel.Simulation.SimulationAverageWorkersGroupBUtilization.Mean;
         var averageWorkersGroupBUtilizationCI = _viewModel.Simulation.SimulationAverageWorkersGroupBUtilization.ConfidenceInterval95();
+        var averageWorkersGroupCUtilization = _viewModel.Simulation.SimulationAverageWorkersGroupCUtilization.Mean;
         var averageWorkersGroupCUtilizationCI = _viewModel.Simulation.SimulationAverageWorkersGroupCUtilization.ConfidenceInterval95();
 
         var allWorkersUtilization = _viewModel.Simulation.GetAllWorkersSimulationUtilization();
@@ -268,12 +303,8 @@ public partial class MainWindow : Window
         Dispatcher.UIThread.Post(() =>
         {
             _viewModel.CurrentReplication = currentReplication.ToString();
-            _viewModel.SimulationCurrentProcessingOrderTimeSeconds = $"{averageProcessingOrderTime:F2}";
-            _viewModel.SimulationCurrentProcessingOrderTimeMinutes = $"{averageProcessingOrderTime / 60:F2}";
-            _viewModel.SimulationCurrentProcessingOrderTimeHours = $"{averageProcessingOrderTime / 3600:F2}";
-            _viewModel.SimulationCurrentProcessingOrderTimeSecondsCI = $"<{averageProcessingOrderTimeCI.Item1:F2} ; {averageProcessingOrderTimeCI.Item2:F2}>";
-            _viewModel.SimulationCurrentProcessingOrderTimeMinutesCI = $"<{averageProcessingOrderTimeCI.Item1 / 60:F2} ; {averageProcessingOrderTimeCI.Item2 / 60:F2}>";
-            _viewModel.SimulationCurrentProcessingOrderTimeHoursCI = $"<{averageProcessingOrderTimeCI.Item1 / 3600:F2} ; {averageProcessingOrderTimeCI.Item2 / 3600:F2}>";
+            _viewModel.SetSimulationCurrentProcessingOrderTime(averageProcessingOrderTime, averageProcessingOrderTimeCI.Item1, averageProcessingOrderTimeCI.Item2);
+            
             _viewModel.SimulationPendingOrders = $"{averagePendingOrdersCount:F2}";
             _viewModel.SimulationPendingOrdersCI = $"<{averagePendingOrdersCountCI.Item1:F2} ; {averagePendingOrdersCountCI.Item2:F2}>";
             _viewModel.SimulationPendingCutMaterials = $"{averagePendingCutMaterialsCount:F2}";
@@ -282,11 +313,33 @@ public partial class MainWindow : Window
             _viewModel.SimulationPendingVarnishedMaterialsCI = $"<{averagePendingVarnishedMaterialsCountCI.Item1:F2} ; {averagePendingVarnishedMaterialsCountCI.Item2:F2}>";
             _viewModel.SimulationPendingFoldedClosets = $"{averagePendingFoldedClosetsCount:F2}";
             _viewModel.SimulationPendingFoldedClosetsCI = $"<{averagePendingFoldedClosetsCountCI.Item1:F2} ; {averagePendingFoldedClosetsCountCI.Item2:F2}>";
-            _viewModel.SimulationWorkersAUtilization = $"{averageWorkersGroupAUtilizationCI.Item1 * 100:F2}";
+            
+            _viewModel.SetSimulationPendingOrdersWaitingTime(
+                averagePendingOrdersWaitingTime, 
+                averagePendingOrdersWaitingTimeCI.Item1, 
+                averagePendingOrdersWaitingTimeCI.Item2
+            );
+            _viewModel.SetSimulationCutMaterialsWaitingTime(
+                averageCutMaterialsWaitingTime, 
+                averageCutMaterialsWaitingTimeCI.Item1, 
+                averageCutMaterialsWaitingTimeCI.Item2
+            );
+            _viewModel.SetSimulationVarnishedMaterialsWaitingTime(
+                averageVarnishedMaterialsWaitingTime, 
+                averageVarnishedMaterialsWaitingTimeCI.Item1, 
+                averageVarnishedMaterialsWaitingTimeCI.Item2
+            );
+            _viewModel.SetSimulationFoldedClosetsWaitingTime(
+                averageFoldedClosetsWaitingTime, 
+                averageFoldedClosetsWaitingTimeCI.Item1, 
+                averageFoldedClosetsWaitingTimeCI.Item2
+            );
+            
+            _viewModel.SimulationWorkersAUtilization = $"{averageWorkersGroupAUtilization * 100:F2}";
             _viewModel.SimulationWorkersAUtilizationCI = $"<{(averageWorkersGroupAUtilizationCI.Item1*100):F2} ; {(averageWorkersGroupAUtilizationCI.Item2*100):F2}>";
-            _viewModel.SimulationWorkersBUtilization = $"{averageWorkersGroupBUtilizationCI.Item1 * 100:F2}";
+            _viewModel.SimulationWorkersBUtilization = $"{averageWorkersGroupBUtilization * 100:F2}";
             _viewModel.SimulationWorkersBUtilizationCI = $"<{(averageWorkersGroupBUtilizationCI.Item1*100):F2} ; {(averageWorkersGroupBUtilizationCI.Item2*100):F2}>";
-            _viewModel.SimulationWorkersCUtilization = $"{averageWorkersGroupCUtilizationCI.Item1 * 100:F2}";
+            _viewModel.SimulationWorkersCUtilization = $"{averageWorkersGroupCUtilization * 100:F2}";
             _viewModel.SimulationWorkersCUtilizationCI = $"<{(averageWorkersGroupCUtilizationCI.Item1*100):F2} ; {(averageWorkersGroupCUtilizationCI.Item2*100):F2}>";
             
             for (int i = 0; i < allWorkersUtilization.Count; i++)

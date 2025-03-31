@@ -7,6 +7,7 @@ namespace DiscreteSimulation.FurnitureManufacturer.DTOs;
 public class WorkerDTO : INotifyPropertyChanged, IUpdatable<WorkerDTO>
 {
     private string _id;
+    private bool _isBusy;
     private string _place;
     private string _order;
     private string _state;
@@ -20,6 +21,31 @@ public class WorkerDTO : INotifyPropertyChanged, IUpdatable<WorkerDTO>
             if (value == _id) return;
             _id = value;
             OnPropertyChanged(nameof(Id));
+        }
+    }
+    
+    public bool IsBusy
+    {
+        get => _isBusy;
+        set
+        {
+            if (value == _isBusy) return;
+            _isBusy = value;
+            OnPropertyChanged(nameof(IsBusy));
+            OnPropertyChanged(nameof(StatusColor));
+        }
+    }
+    
+    public string StatusColor
+    {
+        get
+        {
+            if (IsBusy)
+            {
+                return "Red";
+            }
+            
+            return "Green";
         }
     }
 
@@ -104,6 +130,8 @@ public class WorkerDTO : INotifyPropertyChanged, IUpdatable<WorkerDTO>
         }
         
         Utilization = worker.Utilization.ToString("0.00%");
+        
+        IsBusy = worker.IsBusy;
     }
     
     public void Update(WorkerDTO workerDTO)
@@ -113,6 +141,7 @@ public class WorkerDTO : INotifyPropertyChanged, IUpdatable<WorkerDTO>
         Order = workerDTO.Order;
         State = workerDTO.State;
         Utilization = workerDTO.Utilization;
+        IsBusy = workerDTO.IsBusy;
     }
 
     public event PropertyChangedEventHandler? PropertyChanged;

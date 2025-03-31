@@ -12,5 +12,7 @@ public class Order
     
     public double ArrivalTime { get; set; }
     
+    public double StartedWaitingTime { get; set; }
+    
     public string State { get; set; }
 }

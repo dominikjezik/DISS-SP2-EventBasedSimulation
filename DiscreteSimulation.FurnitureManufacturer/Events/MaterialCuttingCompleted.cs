@@ -28,6 +28,7 @@ public class MaterialCuttingCompleted : FurnitureManufacturerBaseEvent
         {
             // Pracovník nie je k dispozícii, materiál sa pridá do frontu čakajúcich narezaných materiálov
             currentOrder.State = "Material cut (in queue)";
+            currentOrder.StartedWaitingTime = Simulation.SimulationTime;
             Simulation.PendingCutMaterialsQueue.Enqueue(currentOrder);
         }
         else
@@ -59,6 +60,8 @@ public class MaterialCuttingCompleted : FurnitureManufacturerBaseEvent
             {
                 throw new Exception("Undefined position of worker C");
             }
+            
+            Simulation.AverageWaitingTimeInPendingCutMaterialsQueue.AddValue(0);
 
             var arrivalToLineWithCutMaterial = new ArrivalToLineWithCutMaterial(arrivalTime, Simulation, availableWorker, currentAssemblyLine);
             
@@ -71,6 +74,8 @@ public class MaterialCuttingCompleted : FurnitureManufacturerBaseEvent
             var order = Simulation.PendingOrdersQueue.Dequeue();
             
             CurrentWorker.CurrentOrder = order;
+            
+            Simulation.AverageWaitingTimeInPendingOrdersQueue.AddValue(Simulation.SimulationTime - order.StartedWaitingTime);
             
             var startOfOrderPreparation = new StartOfOrderPreparation(Simulation.SimulationTime, Simulation, CurrentWorker);
             
