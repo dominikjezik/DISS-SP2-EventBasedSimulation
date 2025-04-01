@@ -209,7 +209,7 @@ public class MainWindowViewModel : ViewModelBase
 
     #region ReplicationControls
 
-    private long _replications = 1;
+    private long _replications = 1000;
     
     public long Replications
     {
@@ -716,6 +716,18 @@ public class MainWindowViewModel : ViewModelBase
 
     #region MultipleReplicationsControls
     
+    private bool _enableRender95ConfidenceInterval = true;
+    
+    public bool EnableRender95ConfidenceInterval
+    {
+        get => _enableRender95ConfidenceInterval;
+        set
+        {
+            _enableRender95ConfidenceInterval = value;
+            OnPropertyChanged();
+        }
+    }
+    
     private string _currentReplication = "_";
 
     public string CurrentReplication
@@ -1175,7 +1187,7 @@ public class MainWindowViewModel : ViewModelBase
         }
     }
 
-    private long _renderPoints = 10;
+    private long _renderPoints = 1000;
 
     public long RenderPoints
     {

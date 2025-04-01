@@ -262,6 +262,8 @@ public class FurnitureManufacturerSimulation : EventSimulationCore
                 throw new ArgumentException("Invalid worker group");
         }
 
+        // Ak je vypnuté preferovanie voľných pracovníkov na základe ich polohy,
+        // vrátime prvého voľného pracovníka
         if (!EnableWorkerLocationPreference)
         {
             return workers.FirstOrDefault(worker => !worker.IsBusy);
@@ -399,7 +401,6 @@ public class FurnitureManufacturerSimulation : EventSimulationCore
 
     private void InitializeWorkers()
     {
-        // Initialize workers
         for (var i = 0; i < CountOfWorkersGroupA; i++)
         {
             WorkersGroupA[i] = new Worker(this)

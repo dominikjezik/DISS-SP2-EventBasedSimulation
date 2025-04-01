@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Threading;
@@ -12,6 +13,7 @@ using DiscreteSimulation.FurnitureManufacturer.Utilities;
 using DiscreteSimulation.GUI.ViewModels;
 using ScottPlot;
 using ScottPlot.AutoScalers;
+using ScottPlot.Plottables;
 
 namespace DiscreteSimulation.GUI.Views;
 
@@ -20,6 +22,12 @@ public partial class MainWindow : Window
     private readonly MainWindowViewModel _viewModel;
     
     private readonly List<Coordinates> _replicationsProcessingOrderTimePlotData = new();
+    private readonly List<Coordinates> _replicationsProcessingOrderTimeCILowerPlotData = new();
+    private readonly List<Coordinates> _replicationsProcessingOrderTimeCIUpperPlotData = new();
+
+    private Scatter? ScatterLineReplicationsCIUpper;
+    private Scatter? ScatterLineReplicationsCILower;
+        
     private string _selectedCoordinatesTimeUnit = "seconds";
     private int _skipFirstNReplications = 0;
     private bool _stopSimulationRequested = false;
@@ -54,6 +62,8 @@ public partial class MainWindow : Window
         _viewModel.DisableButtonsForSimulationStart();
 
         _replicationsProcessingOrderTimePlotData.Clear();
+        _replicationsProcessingOrderTimeCILowerPlotData.Clear();
+        _replicationsProcessingOrderTimeCIUpperPlotData.Clear();
         
         ProcessingOrderTimePlot.Plot.Axes.AutoScale();
         ProcessingOrderTimePlot.Refresh();
@@ -365,8 +375,13 @@ public partial class MainWindow : Window
         {
             return;
         }
-        
-        Dispatcher.UIThread.Post(() => AddValueToProcessingOrderTimePlot(currentReplication, averageProcessingOrderTime));
+
+        Dispatcher.UIThread.Post(() => AddValueToProcessingOrderTimePlot(
+            currentReplication,
+            averageProcessingOrderTime,
+            averageProcessingOrderTimeCI.Item1,
+            averageProcessingOrderTimeCI.Item2
+        ));
     }
 
     private void SynchronizeCollection<TItem>(ObservableCollection<TItem> targetList, List<TItem> sourceList) where TItem : IUpdatable<TItem>
@@ -392,10 +407,15 @@ public partial class MainWindow : Window
         }
     }
     
-    private void AddValueToProcessingOrderTimePlot(long replication, double processingOrderTime)
+    private void AddValueToProcessingOrderTimePlot(long replication, double processingOrderTime, double timeLower, double timeUpper)
     {
         var newY = RecalculateCoordinateValue(processingOrderTime, "seconds");
+        var newYLower = RecalculateCoordinateValue(timeLower, "seconds");
+        var newYUpper = RecalculateCoordinateValue(timeUpper, "seconds");
+        
         _replicationsProcessingOrderTimePlotData.Add(new Coordinates(replication, newY));
+        _replicationsProcessingOrderTimeCILowerPlotData.Add(new Coordinates(replication, newYLower));
+        _replicationsProcessingOrderTimeCIUpperPlotData.Add(new Coordinates(replication, newYUpper));
 
         ProcessingOrderTimePlot.Plot.Axes.AutoScale();
         ProcessingOrderTimePlot.Refresh();
@@ -405,6 +425,12 @@ public partial class MainWindow : Window
     {
         var scatterLineReplications = ProcessingOrderTimePlot.Plot.Add.ScatterLine(_replicationsProcessingOrderTimePlotData, Colors.Red);
         scatterLineReplications.PathStrategy = new ScottPlot.PathStrategies.Straight();
+        
+        ScatterLineReplicationsCIUpper = ProcessingOrderTimePlot.Plot.Add.ScatterLine(_replicationsProcessingOrderTimeCIUpperPlotData, Colors.Gray);
+        ScatterLineReplicationsCIUpper.PathStrategy = new ScottPlot.PathStrategies.Straight();
+        
+        ScatterLineReplicationsCILower = ProcessingOrderTimePlot.Plot.Add.ScatterLine(_replicationsProcessingOrderTimeCILowerPlotData, Colors.Gray);
+        ScatterLineReplicationsCILower.PathStrategy = new ScottPlot.PathStrategies.Straight();
         
         ProcessingOrderTimePlot.Plot.Axes.Bottom.Label.Text = "Replication";
         ProcessingOrderTimePlot.Plot.Axes.Left.Label.Text = "Processing order time";
@@ -417,10 +443,9 @@ public partial class MainWindow : Window
         var menuItem = sender as MenuItem;
         _viewModel.SelectedTimeUnits = menuItem.Header.ToString();
         
-        //private readonly List<Coordinates> _replicationsProcessingOrderTimePlotData = new();
-        // recalculate points to selected time unit
         var newData = new List<Coordinates>();
         
+        // Replication data
         foreach (var coordinates in _replicationsProcessingOrderTimePlotData)
         {
             var newX = coordinates.X;
@@ -429,14 +454,50 @@ public partial class MainWindow : Window
             newData.Add(new Coordinates(newX, newY));
         }
         
-        _selectedCoordinatesTimeUnit = _viewModel.SelectedTimeUnits;
-        
         _replicationsProcessingOrderTimePlotData.Clear();
         
         foreach (var coordinates in newData)
         {
             _replicationsProcessingOrderTimePlotData.Add(new Coordinates(coordinates.X, coordinates.Y));
         }
+        
+        // Lower CI data
+        newData.Clear();
+        
+        foreach (var coordinates in _replicationsProcessingOrderTimeCILowerPlotData)
+        {
+            var newX = coordinates.X;
+            var newY = RecalculateCoordinateValue(coordinates.Y);
+            
+            newData.Add(new Coordinates(newX, newY));
+        }
+        
+        _replicationsProcessingOrderTimeCILowerPlotData.Clear();
+        
+        foreach (var coordinates in newData)
+        {
+            _replicationsProcessingOrderTimeCILowerPlotData.Add(new Coordinates(coordinates.X, coordinates.Y));
+        }
+        
+        // Upper CI data
+        newData.Clear();
+        
+        foreach (var coordinates in _replicationsProcessingOrderTimeCIUpperPlotData)
+        {
+            var newX = coordinates.X;
+            var newY = RecalculateCoordinateValue(coordinates.Y);
+            
+            newData.Add(new Coordinates(newX, newY));
+        }
+        
+        _replicationsProcessingOrderTimeCIUpperPlotData.Clear();
+        
+        foreach (var coordinates in newData)
+        {
+            _replicationsProcessingOrderTimeCIUpperPlotData.Add(new Coordinates(coordinates.X, coordinates.Y));
+        }
+        
+        _selectedCoordinatesTimeUnit = _viewModel.SelectedTimeUnits;
         
         ProcessingOrderTimePlot.Plot.Axes.AutoScale();
         ProcessingOrderTimePlot.Refresh();
@@ -473,5 +534,21 @@ public partial class MainWindow : Window
                 _ => coordinate
             },
         };
+    }
+
+    private void Render95ConfidenceIntervalCheckbox_OnPropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
+    {
+        var checkBox = sender as CheckBox;
+        
+        if (ScatterLineReplicationsCIUpper == null || ScatterLineReplicationsCILower == null)
+        {
+            return;
+        }
+        
+        ScatterLineReplicationsCIUpper.IsVisible = checkBox.IsChecked == true;
+        ScatterLineReplicationsCILower.IsVisible = checkBox.IsChecked == true;
+        
+        ProcessingOrderTimePlot.Plot.Axes.AutoScale();
+        ProcessingOrderTimePlot.Refresh();
     }
 }

@@ -109,10 +109,16 @@
                     HorizontalAlignment="Left">
             
             <CheckBox 
+                IsChecked="{Binding EnableRender95ConfidenceInterval}"
+                PropertyChanged="Render95ConfidenceIntervalCheckbox_OnPropertyChanged"
+                IsVisible="{Binding IsMultipleReplications}"
+                Margin="10,10,20,0">Render 95% Confidence Interval</CheckBox>
+            
+            <CheckBox 
                 IsChecked="{Binding EnableWorkerLocationPreference}"
                 IsEnabled="{Binding IsStartSimulationButtonEnabled}"
                 IsVisible="{Binding IsMultipleReplications}"
-                Margin="0,10,20,0">Worker location preference</CheckBox>
+                Margin="0,10,25,0">Worker location preference</CheckBox>
             
             <Label 
                 VerticalAlignment="Center"
