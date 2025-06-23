@@ -25,7 +25,7 @@ The application was developed as the second semester work on the Discrete Simula
 - ⏱️ Accelaration and deceleration of simulation run speed
 
 ## 🚀 Video Preview
-...
+https://github.com/user-attachments/assets/023dd096-8e76-492b-90ef-fccc7b833dc2
 
 ## 🏭 Simulation Scenario
 Models a furniture workshop producing:
@@ -83,7 +83,7 @@ Models a furniture workshop producing:
 <br>
 
 
-# 🪑 Udalost-orientovaná simulácia výrobcu nábytku
+# 🪑 Udalostne orientovaná simulácia výrobcu nábytku
 Tento projekt simuluje prevádzku výrobcu nábytku pomocou udalostne orientovanej simulácie. Simulácia modeluje pracovný postup výroby nábytku, vrátane spracovania objednávok, manipulácie s materiálom a prideľovania pracovníkov. Cieľom je analyzovať efektívnosť výrobného procesu a určiť optimálny počet zamestnancov pre rôzne skupiny pracovníkov (A, B, C). Simulácia je postavená na platforme .NET a používateľské rozhranie je implementované pomocou Avalonia frameworku.
 
 Aplikácia bola vytvorená ako druhá semestrálna práca v rámci predmetu Diskrétna simulácia na Fakulte riadenia a informatiky Žilinskej univerzity v Žiline.
@@ -110,9 +110,9 @@ Aplikácia bola vytvorená ako druhá semestrálna práca v rámci predmetu Disk
 - ⏱️ Rýchlosť simulačného behu je možné zrýchliť alebo spomaliť
 
 ## 🚀 Video ukážka
-...
+https://github.com/user-attachments/assets/023dd096-8e76-492b-90ef-fccc7b833dc2
 
-## 🏭 Simulačný scenár
+## 🏭 Scenár simulácie
 Modelujeme dielňu na výrobu nábytku, ktorá vyrába:
 - 🟫 **Stoly** (50% objednávok)
 - 🪑 **Stoličky** (15%)
